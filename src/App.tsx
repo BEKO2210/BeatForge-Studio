@@ -3,7 +3,9 @@ import { AudioEngine } from './audio/AudioEngine';
 import type { AudioState } from './audio/types';
 import { AudioUpload } from './components/AudioUpload';
 import { AudioPlayer } from './components/AudioPlayer';
+import { TextEditor } from './components/TextEditor';
 import { VisualizerContainer } from './visualizers';
+import type { TextLayer } from './text';
 import './App.css';
 
 function App() {
@@ -13,6 +15,7 @@ function App() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [engineKey, setEngineKey] = useState(0);
+  const [textLayers, setTextLayers] = useState<TextLayer[]>([]);
 
   // Create AudioEngine with memoization - recreates when engineKey changes
   const audioEngine = useMemo(() => {
@@ -107,7 +110,13 @@ function App() {
               disabled={isLoading}
             />
 
-            <VisualizerContainer audioEngine={audioEngine} />
+            <TextEditor
+              layers={textLayers}
+              onLayersChange={setTextLayers}
+              disabled={isLoading}
+            />
+
+            <VisualizerContainer audioEngine={audioEngine} textLayers={textLayers} />
           </div>
         )}
       </main>

@@ -5,6 +5,7 @@ import { useBeatDetector } from '../hooks/useBeatDetector';
 import { EqualizerVisualizer } from './EqualizerVisualizer';
 import { WaveformVisualizer } from './WaveformVisualizer';
 import { CircularSpectrumVisualizer } from './CircularSpectrumVisualizer';
+import { TextLayerRenderer, type TextLayer } from '../text';
 import type { VisualizerType } from './types';
 
 interface AudioDataState {
@@ -14,6 +15,7 @@ interface AudioDataState {
 
 interface VisualizerContainerProps {
   audioEngine: AudioEngine | null;
+  textLayers?: TextLayer[];
   className?: string;
 }
 
@@ -23,6 +25,7 @@ interface VisualizerContainerProps {
  */
 export function VisualizerContainer({
   audioEngine,
+  textLayers,
   className,
 }: VisualizerContainerProps) {
   const [selectedVisualizer, setSelectedVisualizer] = useState<VisualizerType>('equalizer');
@@ -127,6 +130,16 @@ export function VisualizerContainer({
       {selectedVisualizer === 'equalizer' && <EqualizerVisualizer {...visualizerProps} />}
       {selectedVisualizer === 'waveform' && <WaveformVisualizer {...visualizerProps} />}
       {selectedVisualizer === 'circular' && <CircularSpectrumVisualizer {...visualizerProps} />}
+
+      {/* Render text layers on top of visualizers */}
+      <TextLayerRenderer
+        renderer={renderer}
+        layers={textLayers ?? []}
+        isBeat={beatInfo?.isBeat ?? false}
+        beatIntensity={beatInfo?.intensity ?? 0}
+        width={renderer?.width ?? 800}
+        height={renderer?.height ?? 400}
+      />
     </div>
   );
 }
