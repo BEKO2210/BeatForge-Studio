@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-15)
 
 **Core value:** Beat-reactive visuals that feel tight and alive. If the visuals don't breathe with the music, nothing else matters.
-**Current focus:** Phase 2 — Audio Engine (Complete)
+**Current focus:** Phase 3 — Beat Detection (Plan 01 complete)
 
 ## Current Position
 
-Phase: 2 of 12 (Audio Engine)
-Plan: 01 of 1 in current phase
-Status: Phase 2 complete - ready for Phase 3
-Last activity: 2025-01-15 — Plan 02-01 executed (AudioEngine + Upload + Player)
+Phase: 3 of 12 (Beat Detection)
+Plan: 01 of 2 in current phase
+Status: Plan 03-01 complete - ready for Plan 03-02 (visual feedback)
+Last activity: 2025-01-15 — Plan 03-01 executed (BeatDetector + frequency analysis)
 
-Progress: ██░░░░░░░░ 17%
+Progress: ███░░░░░░░ 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 14 min
-- Total execution time: 0.5 hours
+- Total plans completed: 3
+- Average duration: 12 min
+- Total execution time: 0.6 hours
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: ██░░░░░░░░ 17%
 |-------|-------|-------|----------|
 | 01-foundation | 1/1 | 12 min | 12 min |
 | 02-audio-engine | 1/1 | 15 min | 15 min |
+| 03-beat-detection | 1/2 | 10 min | 10 min |
 
 **Recent Trend:**
-- Last 5 plans: 12, 15 min
+- Last 5 plans: 12, 15, 10 min
 - Trend: Consistent execution
 
 ## Accumulated Context
@@ -47,6 +48,9 @@ Recent decisions affecting current work:
 - **2025-01-15 (02-01):** Lazy AudioContext initialization for browser autoplay policy compliance
 - **2025-01-15 (02-01):** useMemo with key pattern for AudioEngine lifecycle management
 - **2025-01-15 (02-01):** State lifted to App.tsx - AudioPlayer receives all state as props
+- **2025-01-15 (03-01):** AnalyserNode fftSize 2048, smoothingTimeConstant 0.8 for beat detection
+- **2025-01-15 (03-01):** Energy-based beat detection with 1.3x threshold and 100ms cooldown
+- **2025-01-15 (03-01):** Bass frequency (20-250Hz) as primary beat indicator
 
 ### Pending Todos
 
@@ -59,5 +63,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2025-01-15
-Stopped at: Phase 2 Audio Engine complete
+Stopped at: Phase 3 Beat Detection - Plan 01 complete
 Resume file: None
