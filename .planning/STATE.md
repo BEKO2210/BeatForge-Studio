@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-15)
 
 **Core value:** Beat-reactive visuals that feel tight and alive. If the visuals don't breathe with the music, nothing else matters.
-**Current focus:** Phase 4 — Canvas Renderer (Complete)
+**Current focus:** Phase 5 — Visualizers (In Progress)
 
 ## Current Position
 
-Phase: 4 of 12 (Canvas Renderer)
-Plan: 01 of 1 in current phase
-Status: Phase 4 complete - ready for Phase 5 (Visualizers)
-Last activity: 2025-01-15 — Plan 04-01 executed (Renderer class + shape primitives + useRenderer hook)
+Phase: 5 of 12 (Visualizers)
+Plan: 01 complete, continuing phase
+Status: Plan 05-01 complete - data foundation ready for visualizer components
+Last activity: 2025-01-15 — Plan 05-01 executed (BeatDetector data access + visualizer types)
 
 Progress: ████░░░░░░ 33%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 10 min
-- Total execution time: 0.88 hours
+- Total execution time: 0.98 hours
 
 **By Phase:**
 
@@ -31,9 +31,10 @@ Progress: ████░░░░░░ 33%
 | 02-audio-engine | 1/1 | 15 min | 15 min |
 | 03-beat-detection | 2/2 | 18 min | 9 min |
 | 04-canvas-renderer | 1/1 | 8 min | 8 min |
+| 05-visualizers | 1/? | 6 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 15, 10, 8, 8 min
+- Last 5 plans: 10, 8, 8, 6 min
 - Trend: Consistent execution, improving speed
 
 ## Accumulated Context
@@ -57,6 +58,9 @@ Recent decisions affecting current work:
 - **2025-01-15 (04-01):** devicePixelRatio scaling for crisp rendering on high-DPI displays
 - **2025-01-15 (04-01):** Set-based render callbacks allowing multiple visualizers to register
 - **2025-01-15 (04-01):** ResizeObserver on parent element for responsive canvas sizing
+- **2025-01-15 (05-01):** Frequency data normalized 0-1 (divide by 255 from Uint8Array)
+- **2025-01-15 (05-01):** Time domain data normalized -1 to 1 ((value - 128) / 128)
+- **2025-01-15 (05-01):** VisualizerProps interface uses Renderer | null for initialization state
 
 ### Pending Todos
 
@@ -69,5 +73,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2025-01-15
-Stopped at: Phase 4 Canvas Renderer complete - ready for Phase 5
+Stopped at: Plan 05-01 complete - ready for next visualizer plan
 Resume file: None
