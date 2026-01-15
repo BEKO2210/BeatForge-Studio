@@ -7,6 +7,11 @@ import { WaveformVisualizer } from './WaveformVisualizer';
 import { CircularSpectrumVisualizer } from './CircularSpectrumVisualizer';
 import type { VisualizerType } from './types';
 
+interface AudioDataState {
+  frequencyData: Float32Array | null;
+  timeDomainData: Float32Array | null;
+}
+
 interface VisualizerContainerProps {
   audioEngine: AudioEngine | null;
   className?: string;
@@ -21,6 +26,10 @@ export function VisualizerContainer({
   className,
 }: VisualizerContainerProps) {
   const [selectedVisualizer, setSelectedVisualizer] = useState<VisualizerType>('equalizer');
+  const [audioData, setAudioData] = useState<AudioDataState>({
+    frequencyData: null,
+    timeDomainData: null,
+  });
 
   // Canvas and renderer
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -29,26 +38,25 @@ export function VisualizerContainer({
   // Beat detection for isBeat and intensity
   const { beatInfo } = useBeatDetector(audioEngine);
 
-  // Store audio data in refs (updated each frame)
-  const frequencyDataRef = useRef<Float32Array | null>(null);
-  const timeDomainDataRef = useRef<Float32Array | null>(null);
-
-  // State to trigger re-renders when data updates (needed for visualizer props)
-  const [frameCounter, setFrameCounter] = useState(0);
-
   // Poll beat detector for raw audio data each frame
   useEffect(() => {
-    if (!audioEngine) {
-      frequencyDataRef.current = null;
-      timeDomainDataRef.current = null;
-      return;
-    }
-
     let isActive = true;
     let frameId: number | null = null;
 
     const tick = () => {
       if (!isActive) return;
+
+      if (!audioEngine) {
+        // Reset data when no engine - only update if currently has data
+        setAudioData(prev => {
+          if (prev.frequencyData !== null || prev.timeDomainData !== null) {
+            return { frequencyData: null, timeDomainData: null };
+          }
+          return prev;
+        });
+        frameId = requestAnimationFrame(tick);
+        return;
+      }
 
       const beatDetector = audioEngine.getBeatDetector();
       if (beatDetector) {
@@ -56,10 +64,9 @@ export function VisualizerContainer({
         if (audioState === 'playing') {
           // Get raw audio data - getBeatInfo already called by useBeatDetector
           // so frequencyData is already populated
-          frequencyDataRef.current = beatDetector.getFrequencyData();
-          timeDomainDataRef.current = beatDetector.getTimeDomainData();
-          // Increment frame counter to trigger re-render with new data
-          setFrameCounter(c => c + 1);
+          const frequencyData = beatDetector.getFrequencyData();
+          const timeDomainData = beatDetector.getTimeDomainData();
+          setAudioData({ frequencyData, timeDomainData });
         }
       }
 
@@ -79,16 +86,13 @@ export function VisualizerContainer({
   // Common props for all visualizers
   const visualizerProps = {
     renderer,
-    frequencyData: frequencyDataRef.current,
-    timeDomainData: timeDomainDataRef.current,
+    frequencyData: audioData.frequencyData,
+    timeDomainData: audioData.timeDomainData,
     isBeat: beatInfo?.isBeat ?? false,
     beatIntensity: beatInfo?.intensity ?? 0,
     width: renderer?.width ?? 800,
     height: renderer?.height ?? 400,
   };
-
-  // Silence unused variable warning - frameCounter is used to trigger re-renders
-  void frameCounter;
 
   return (
     <div className={`visualizer-container ${className ?? ''}`}>

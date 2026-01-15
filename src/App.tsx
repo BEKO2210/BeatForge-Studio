@@ -1,12 +1,9 @@
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { AudioEngine } from './audio/AudioEngine';
 import type { AudioState } from './audio/types';
 import { AudioUpload } from './components/AudioUpload';
 import { AudioPlayer } from './components/AudioPlayer';
-import { BeatDebug } from './components/BeatDebug';
-import { useBeatDetector } from './hooks/useBeatDetector';
-import { useRenderer } from './hooks/useRenderer';
-import { drawRect, drawCircle, drawLine } from './renderer/shapes';
+import { VisualizerContainer } from './visualizers';
 import './App.css';
 
 function App() {
@@ -37,66 +34,6 @@ function App() {
 
     return engine;
   }, [engineKey]);
-
-  // Subscribe to beat detection data
-  const { beatInfo, beatCount } = useBeatDetector(audioEngine);
-
-  // Canvas renderer setup
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { renderer } = useRenderer(canvasRef, { height: 400 });
-
-  // Register demo render callback with animated shapes
-  useEffect(() => {
-    if (!renderer) return;
-
-    let startTime = performance.now();
-
-    const unsubscribe = renderer.onRender((ctx) => {
-      const elapsed = performance.now() - startTime;
-      const width = renderer.width;
-      const height = renderer.height;
-
-      // Animated circle - pulses based on time
-      const baseRadius = 40;
-      const pulseAmount = Math.sin(elapsed / 300) * 15;
-      const circleRadius = baseRadius + pulseAmount;
-
-      drawCircle(ctx, width / 2, height / 2, circleRadius, {
-        fillColor: '#646cff',
-        strokeColor: '#818cf8',
-        strokeWidth: 2,
-      });
-
-      // Static rectangle on the left
-      drawRect(ctx, 50, height / 2 - 50, 100, 100, {
-        fillColor: '#2d2d2d',
-        strokeColor: '#4a4a4a',
-        strokeWidth: 2,
-        cornerRadius: 8,
-      });
-
-      // Animated line on the right - rotates
-      const lineLength = 80;
-      const angle = elapsed / 1000;
-      const lineCenterX = width - 100;
-      const lineCenterY = height / 2;
-      const x1 = lineCenterX + Math.cos(angle) * lineLength;
-      const y1 = lineCenterY + Math.sin(angle) * lineLength;
-      const x2 = lineCenterX - Math.cos(angle) * lineLength;
-      const y2 = lineCenterY - Math.sin(angle) * lineLength;
-
-      drawLine(ctx, x1, y1, x2, y2, {
-        color: '#22c55e',
-        width: 4,
-        lineCap: 'round',
-      });
-    });
-
-    return () => {
-      unsubscribe();
-      startTime = performance.now();
-    };
-  }, [renderer]);
 
   const handleFileSelect = useCallback(async (file: File) => {
     setError(null);
@@ -170,11 +107,7 @@ function App() {
               disabled={isLoading}
             />
 
-            <BeatDebug beatInfo={beatInfo} beatCount={beatCount} />
-
-            <div className="canvas-container">
-              <canvas ref={canvasRef} className="visualizer-canvas" />
-            </div>
+            <VisualizerContainer audioEngine={audioEngine} />
           </div>
         )}
       </main>
