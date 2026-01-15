@@ -3,6 +3,8 @@ import { AudioEngine } from './audio/AudioEngine';
 import type { AudioState } from './audio/types';
 import { AudioUpload } from './components/AudioUpload';
 import { AudioPlayer } from './components/AudioPlayer';
+import { BeatDebug } from './components/BeatDebug';
+import { useBeatDetector } from './hooks/useBeatDetector';
 import './App.css';
 
 function App() {
@@ -33,6 +35,9 @@ function App() {
 
     return engine;
   }, [engineKey]);
+
+  // Subscribe to beat detection data
+  const { beatInfo, beatCount } = useBeatDetector(audioEngine);
 
   const handleFileSelect = useCallback(async (file: File) => {
     setError(null);
@@ -105,6 +110,8 @@ function App() {
               audioState={audioState}
               disabled={isLoading}
             />
+
+            <BeatDebug beatInfo={beatInfo} beatCount={beatCount} />
 
             <div className="canvas-placeholder">
               <p>Visualizer canvas will render here</p>

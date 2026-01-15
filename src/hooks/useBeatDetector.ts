@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { BeatInfo, FrequencyBands } from '../audio/types';
 import type { AudioEngine } from '../audio/AudioEngine';
 
@@ -13,67 +13,130 @@ interface UseBeatDetectorResult {
   beatCount: number;
 }
 
+interface BeatState {
+  beatInfo: BeatInfo | null;
+  beatCount: number;
+  engineId: AudioEngine | null;
+}
+
 /**
  * React hook that subscribes to beat detection data from an AudioEngine.
  *
- * Uses the AudioEngine's onBeatInfo callback to receive beat data each frame.
- * The callback approach ensures we don't miss beat events between renders.
+ * Polls the BeatDetector directly during playback to get beat info each frame.
+ * The polling approach via requestAnimationFrame ensures smooth visual updates.
  *
  * @param audioEngine - The AudioEngine instance to subscribe to
  * @returns Beat detection state including beatInfo, frequencyBands, isBeat, and beatCount
  */
 export function useBeatDetector(audioEngine: AudioEngine | null): UseBeatDetectorResult {
-  const [beatInfo, setBeatInfo] = useState<BeatInfo | null>(null);
-  const [beatCount, setBeatCount] = useState(0);
+  // Create initial state based on current engine
+  const getInitialState = useCallback((): BeatState => ({
+    beatInfo: null,
+    beatCount: 0,
+    engineId: audioEngine,
+  }), [audioEngine]);
+
+  const [state, setState] = useState<BeatState>(getInitialState);
 
   // Track previous beat state to detect beat transitions
   const wasBeatRef = useRef(false);
+  const frameIdRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (!audioEngine) {
-      return;
-    }
+  // Memoize the current engine to use in state updates
+  const currentEngine = useMemo(() => audioEngine, [audioEngine]);
 
-    // Subscribe to beat info updates
-    const handleBeatInfo = (info: BeatInfo) => {
-      setBeatInfo(info);
+  // Handler for processing beat info - called from rAF callback
+  const processBeatInfo = useCallback((info: BeatInfo, engine: AudioEngine) => {
+    setState(prev => {
+      // If engine changed, reset state
+      if (prev.engineId !== engine) {
+        wasBeatRef.current = info.isBeat;
+        return {
+          beatInfo: info,
+          beatCount: info.isBeat ? 1 : 0,
+          engineId: engine,
+        };
+      }
 
       // Increment beat count on rising edge (wasn't beat, now is beat)
-      if (info.isBeat && !wasBeatRef.current) {
-        setBeatCount(prev => prev + 1);
-      }
+      const newBeatCount = (info.isBeat && !wasBeatRef.current)
+        ? prev.beatCount + 1
+        : prev.beatCount;
+
       wasBeatRef.current = info.isBeat;
-    };
 
-    // Access the internal callbacks object to set our handler
-    // The AudioEngine calls onBeatInfo during its animation loop
-    const callbacks = (audioEngine as unknown as { callbacks: { onBeatInfo?: (info: BeatInfo) => void } }).callbacks;
-    const previousCallback = callbacks.onBeatInfo;
+      return {
+        ...prev,
+        beatInfo: info,
+        beatCount: newBeatCount,
+      };
+    });
+  }, []);
 
-    callbacks.onBeatInfo = (info: BeatInfo) => {
-      // Call any existing callback first
-      previousCallback?.(info);
-      handleBeatInfo(info);
-    };
-
-    // Cleanup: restore previous callback
-    return () => {
-      callbacks.onBeatInfo = previousCallback;
+  // Handler to reset state when engine is null - called from rAF callback
+  const resetState = useCallback(() => {
+    setState(prev => {
+      if (prev.engineId === null && prev.beatInfo === null) {
+        return prev; // Already reset
+      }
       wasBeatRef.current = false;
-    };
-  }, [audioEngine]);
+      return {
+        beatInfo: null,
+        beatCount: 0,
+        engineId: null,
+      };
+    });
+  }, []);
 
-  // Reset beat count when audioEngine changes (new file loaded)
   useEffect(() => {
-    setBeatCount(0);
-    setBeatInfo(null);
+    // Reset wasBeat ref when engine changes
     wasBeatRef.current = false;
-  }, [audioEngine]);
+
+    let isActive = true;
+
+    // Poll beat detector on each animation frame
+    const tick = () => {
+      if (!isActive) return;
+
+      if (!currentEngine) {
+        // Reset state when no engine - done via callback
+        resetState();
+        frameIdRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      const beatDetector = currentEngine.getBeatDetector();
+      if (!beatDetector) {
+        frameIdRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      const audioState = currentEngine.getState();
+      if (audioState === 'playing') {
+        const info = beatDetector.getBeatInfo();
+        processBeatInfo(info, currentEngine);
+      }
+
+      frameIdRef.current = requestAnimationFrame(tick);
+    };
+
+    // Start the animation loop
+    frameIdRef.current = requestAnimationFrame(tick);
+
+    // Cleanup: stop the loop
+    return () => {
+      isActive = false;
+      if (frameIdRef.current !== null) {
+        cancelAnimationFrame(frameIdRef.current);
+        frameIdRef.current = null;
+      }
+    };
+  }, [currentEngine, processBeatInfo, resetState]);
 
   return {
-    beatInfo,
-    frequencyBands: beatInfo?.frequencyBands ?? null,
-    isBeat: beatInfo?.isBeat ?? false,
-    beatCount,
+    beatInfo: state.beatInfo,
+    frequencyBands: state.beatInfo?.frequencyBands ?? null,
+    isBeat: state.beatInfo?.isBeat ?? false,
+    beatCount: state.beatCount,
   };
 }
