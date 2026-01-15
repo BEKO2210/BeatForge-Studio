@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { decay, easeOutExpo, type EasingFn } from '../animation';
 
 interface UseBeatReactionOptions {
@@ -48,30 +48,14 @@ export function useBeatReaction(
   const beatIntensityRef = useRef(0);
   const frameIdRef = useRef<number | null>(null);
 
-  // Animation tick function
-  const tick = useCallback(() => {
-    const startTime = beatStartRef.current;
+  // Store options in refs to avoid effect dependencies
+  const decayMsRef = useRef(decayMs);
+  const easingRef = useRef(easing);
 
-    if (startTime === null) {
-      // No active beat, ensure value is 0
-      setValue(prev => prev !== 0 ? 0 : prev);
-      frameIdRef.current = requestAnimationFrame(tick);
-      return;
-    }
-
-    const elapsed = performance.now() - startTime;
-    const newValue = beatIntensityRef.current * decay(elapsed, decayMs, easing);
-
-    if (newValue <= 0.01) {
-      // Decay complete
-      beatStartRef.current = null;
-      beatIntensityRef.current = 0;
-      setValue(0);
-    } else {
-      setValue(newValue);
-    }
-
-    frameIdRef.current = requestAnimationFrame(tick);
+  // Update option refs when they change
+  useEffect(() => {
+    decayMsRef.current = decayMs;
+    easingRef.current = easing;
   }, [decayMs, easing]);
 
   // Handle new beats
@@ -83,17 +67,47 @@ export function useBeatReaction(
     }
   }, [isBeat, intensity, threshold]);
 
-  // Start/stop animation loop
+  // Animation loop
   useEffect(() => {
+    let isActive = true;
+
+    const tick = () => {
+      if (!isActive) return;
+
+      const startTime = beatStartRef.current;
+
+      if (startTime === null) {
+        // No active beat, ensure value is 0
+        setValue(prev => prev !== 0 ? 0 : prev);
+        frameIdRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      const elapsed = performance.now() - startTime;
+      const newValue = beatIntensityRef.current * decay(elapsed, decayMsRef.current, easingRef.current);
+
+      if (newValue <= 0.01) {
+        // Decay complete
+        beatStartRef.current = null;
+        beatIntensityRef.current = 0;
+        setValue(0);
+      } else {
+        setValue(newValue);
+      }
+
+      frameIdRef.current = requestAnimationFrame(tick);
+    };
+
     frameIdRef.current = requestAnimationFrame(tick);
 
     return () => {
+      isActive = false;
       if (frameIdRef.current !== null) {
         cancelAnimationFrame(frameIdRef.current);
         frameIdRef.current = null;
       }
     };
-  }, [tick]);
+  }, []); // Empty deps - tick function is self-contained with refs
 
   return {
     value,
