@@ -152,4 +152,35 @@ export class BeatDetector {
     this.energyHistory = [];
     this.lastBeatTime = 0;
   }
+
+  /**
+   * Get normalized frequency data for visualizers
+   * Returns values in 0-1 range (full frequency spectrum)
+   * Note: Call getBeatInfo() or getFrequencyBands() first to populate frequencyData
+   */
+  getFrequencyData(): Float32Array {
+    const normalized = new Float32Array(this.frequencyBinCount);
+    for (let i = 0; i < this.frequencyBinCount; i++) {
+      const value = this.frequencyData[i];
+      normalized[i] = value !== undefined ? value / 255 : 0;
+    }
+    return normalized;
+  }
+
+  /**
+   * Get normalized time domain (waveform) data for visualizers
+   * Returns values in -1 to 1 range
+   */
+  getTimeDomainData(): Float32Array {
+    const timeDomainData = new Uint8Array(this.frequencyBinCount);
+    this.analyser.getByteTimeDomainData(timeDomainData);
+
+    const normalized = new Float32Array(this.frequencyBinCount);
+    for (let i = 0; i < this.frequencyBinCount; i++) {
+      const value = timeDomainData[i];
+      // Normalize from 0-255 to -1 to 1 range
+      normalized[i] = value !== undefined ? (value - 128) / 128 : 0;
+    }
+    return normalized;
+  }
 }
