@@ -1,5 +1,6 @@
 import type { AudioState, AudioEngineCallbacks } from './types';
 import { SUPPORTED_AUDIO_TYPES, SUPPORTED_AUDIO_EXTENSIONS } from './types';
+import { BeatDetector } from './BeatDetector';
 
 /**
  * AudioEngine - Web Audio API wrapper for loading and controlling audio playback
@@ -16,6 +17,7 @@ export class AudioEngine {
   private sourceNode: AudioBufferSourceNode | null = null;
   private gainNode: GainNode | null = null;
   private analyserNode: AnalyserNode | null = null;
+  private beatDetector: BeatDetector | null = null;
   private audioBuffer: AudioBuffer | null = null;
 
   private state: AudioState = 'idle';
@@ -41,6 +43,9 @@ export class AudioEngine {
       this.analyserNode.fftSize = 2048; // Good balance of frequency resolution and performance
       this.analyserNode.smoothingTimeConstant = 0.8; // Smooth transitions, reduce jitter
 
+      // Create BeatDetector for beat analysis
+      this.beatDetector = new BeatDetector(this.analyserNode);
+
       // Create GainNode for volume control
       this.gainNode = this.audioContext.createGain();
 
@@ -56,6 +61,13 @@ export class AudioEngine {
    */
   getAnalyserNode(): AnalyserNode | null {
     return this.analyserNode;
+  }
+
+  /**
+   * Get the BeatDetector for direct access to beat analysis
+   */
+  getBeatDetector(): BeatDetector | null {
+    return this.beatDetector;
   }
 
   /**
@@ -88,6 +100,13 @@ export class AudioEngine {
       if (this.state === 'playing') {
         const currentTime = this.getCurrentTime();
         this.callbacks.onTimeUpdate?.(currentTime);
+
+        // Beat detection - emit beat info each frame
+        if (this.beatDetector) {
+          const beatInfo = this.beatDetector.getBeatInfo();
+          this.callbacks.onBeatInfo?.(beatInfo);
+        }
+
         this.animationFrameId = requestAnimationFrame(updateTime);
       }
     };
@@ -132,8 +151,9 @@ export class AudioEngine {
       // Decode audio data
       this.audioBuffer = await context.decodeAudioData(arrayBuffer);
 
-      // Reset playback position
+      // Reset playback position and beat detector state
       this.pauseOffset = 0;
+      this.beatDetector?.reset();
 
       this.setState('ready');
     } catch (err) {
@@ -217,6 +237,9 @@ export class AudioEngine {
     // Clamp time to valid range
     const clampedTime = Math.max(0, Math.min(time, this.audioBuffer.duration));
 
+    // Reset beat detector to clear energy history on seek
+    this.beatDetector?.reset();
+
     if (this.state === 'playing') {
       // Stop current playback
       if (this.sourceNode) {
@@ -290,6 +313,9 @@ export class AudioEngine {
       this.analyserNode.disconnect();
       this.analyserNode = null;
     }
+
+    // Clean up beat detector
+    this.beatDetector = null;
 
     if (this.gainNode) {
       this.gainNode.disconnect();

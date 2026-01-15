@@ -13,6 +13,8 @@ export interface AudioEngineCallbacks {
   onTimeUpdate?: (currentTime: number) => void;
   /** Called when an error occurs */
   onError?: (error: Error) => void;
+  /** Called each frame with beat analysis data */
+  onBeatInfo?: (beatInfo: BeatInfo) => void;
 }
 
 /**
