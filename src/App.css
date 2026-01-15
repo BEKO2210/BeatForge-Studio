@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #0a0a0a;
   color: #ffffff;
 }
@@ -11,29 +11,93 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  padding: 1.5rem 2rem;
   border-bottom: 1px solid #1a1a1a;
 }
 
 .app-title {
   margin: 0;
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 .app-subtitle {
   margin: 0.5rem 0 0 0;
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: #666666;
 }
 
 .app-main {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 2rem;
+  gap: 1.5rem;
+}
+
+.app-error {
+  padding: 0.75rem 1.5rem;
+  background-color: #331111;
+  border: 1px solid #661111;
+  border-radius: 8px;
+  color: #ff6666;
+  font-size: 0.875rem;
+  max-width: 480px;
+  text-align: center;
+}
+
+.app-player-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1280px;
+}
+
+.app-player-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 600px;
+  padding: 0 0.5rem;
+}
+
+.app-player-filename {
+  font-size: 0.875rem;
+  color: #888888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 70%;
+}
+
+.app-player-new {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid #333333;
+  border-radius: 6px;
+  color: #888888;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.app-player-new:hover {
+  border-color: #646cff;
+  color: #646cff;
+}
+
+.app-player-new svg {
+  width: 14px;
+  height: 14px;
 }
 
 .canvas-placeholder {
@@ -46,6 +110,7 @@
   border: 2px dashed #333333;
   border-radius: 8px;
   background-color: #111111;
+  margin-top: 1rem;
 }
 
 .canvas-placeholder p {
