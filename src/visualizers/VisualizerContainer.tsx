@@ -1,0 +1,128 @@
+import { useState, useRef, useEffect } from 'react';
+import type { AudioEngine } from '../audio/AudioEngine';
+import { useRenderer } from '../hooks/useRenderer';
+import { useBeatDetector } from '../hooks/useBeatDetector';
+import { EqualizerVisualizer } from './EqualizerVisualizer';
+import { WaveformVisualizer } from './WaveformVisualizer';
+import { CircularSpectrumVisualizer } from './CircularSpectrumVisualizer';
+import type { VisualizerType } from './types';
+
+interface VisualizerContainerProps {
+  audioEngine: AudioEngine | null;
+  className?: string;
+}
+
+/**
+ * Container component that hosts visualizers with a selector UI
+ * Manages audio data polling and passes it to the selected visualizer
+ */
+export function VisualizerContainer({
+  audioEngine,
+  className,
+}: VisualizerContainerProps) {
+  const [selectedVisualizer, setSelectedVisualizer] = useState<VisualizerType>('equalizer');
+
+  // Canvas and renderer
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { renderer } = useRenderer(canvasRef, { height: 400 });
+
+  // Beat detection for isBeat and intensity
+  const { beatInfo } = useBeatDetector(audioEngine);
+
+  // Store audio data in refs (updated each frame)
+  const frequencyDataRef = useRef<Float32Array | null>(null);
+  const timeDomainDataRef = useRef<Float32Array | null>(null);
+
+  // State to trigger re-renders when data updates (needed for visualizer props)
+  const [frameCounter, setFrameCounter] = useState(0);
+
+  // Poll beat detector for raw audio data each frame
+  useEffect(() => {
+    if (!audioEngine) {
+      frequencyDataRef.current = null;
+      timeDomainDataRef.current = null;
+      return;
+    }
+
+    let isActive = true;
+    let frameId: number | null = null;
+
+    const tick = () => {
+      if (!isActive) return;
+
+      const beatDetector = audioEngine.getBeatDetector();
+      if (beatDetector) {
+        const audioState = audioEngine.getState();
+        if (audioState === 'playing') {
+          // Get raw audio data - getBeatInfo already called by useBeatDetector
+          // so frequencyData is already populated
+          frequencyDataRef.current = beatDetector.getFrequencyData();
+          timeDomainDataRef.current = beatDetector.getTimeDomainData();
+          // Increment frame counter to trigger re-render with new data
+          setFrameCounter(c => c + 1);
+        }
+      }
+
+      frameId = requestAnimationFrame(tick);
+    };
+
+    frameId = requestAnimationFrame(tick);
+
+    return () => {
+      isActive = false;
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId);
+      }
+    };
+  }, [audioEngine]);
+
+  // Common props for all visualizers
+  const visualizerProps = {
+    renderer,
+    frequencyData: frequencyDataRef.current,
+    timeDomainData: timeDomainDataRef.current,
+    isBeat: beatInfo?.isBeat ?? false,
+    beatIntensity: beatInfo?.intensity ?? 0,
+    width: renderer?.width ?? 800,
+    height: renderer?.height ?? 400,
+  };
+
+  // Silence unused variable warning - frameCounter is used to trigger re-renders
+  void frameCounter;
+
+  return (
+    <div className={`visualizer-container ${className ?? ''}`}>
+      {/* Visualizer selector buttons */}
+      <div className="visualizer-selector">
+        <button
+          className={`visualizer-selector-btn ${selectedVisualizer === 'equalizer' ? 'active' : ''}`}
+          onClick={() => setSelectedVisualizer('equalizer')}
+        >
+          Equalizer
+        </button>
+        <button
+          className={`visualizer-selector-btn ${selectedVisualizer === 'waveform' ? 'active' : ''}`}
+          onClick={() => setSelectedVisualizer('waveform')}
+        >
+          Waveform
+        </button>
+        <button
+          className={`visualizer-selector-btn ${selectedVisualizer === 'circular' ? 'active' : ''}`}
+          onClick={() => setSelectedVisualizer('circular')}
+        >
+          Circular
+        </button>
+      </div>
+
+      {/* Canvas for visualizer rendering */}
+      <div className="visualizer-canvas-wrapper">
+        <canvas ref={canvasRef} className="visualizer-canvas" />
+      </div>
+
+      {/* Render selected visualizer (registers render callback) */}
+      {selectedVisualizer === 'equalizer' && <EqualizerVisualizer {...visualizerProps} />}
+      {selectedVisualizer === 'waveform' && <WaveformVisualizer {...visualizerProps} />}
+      {selectedVisualizer === 'circular' && <CircularSpectrumVisualizer {...visualizerProps} />}
+    </div>
+  );
+}
