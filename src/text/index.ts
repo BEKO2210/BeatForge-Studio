@@ -22,3 +22,7 @@ export type { TextAnimationState } from './TextRenderer';
 
 // Animation utilities
 export { calculateTextAnimation } from './animations';
+
+// React component
+export { TextLayerRenderer } from './TextLayer';
+export type { TextLayerRendererProps } from './TextLayer';
