@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-15)
 
 **Core value:** Beat-reactive visuals that feel tight and alive. If the visuals don't breathe with the music, nothing else matters.
-**Current focus:** Phase 5 — Visualizers (Complete)
+**Current focus:** Phase 6 — Beat Reactivity (In Progress)
 
 ## Current Position
 
-Phase: 5 of 12 (Visualizers) — COMPLETE
-Plan: 03 of 3 complete
-Status: Phase 5 complete - ready for Phase 6 (Beat Reactivity)
-Last activity: 2025-01-15 — Plan 05-03 executed (VisualizerContainer integration + temporal flow)
+Phase: 6 of 12 (Beat Reactivity) — IN PROGRESS
+Plan: 01 of 2 complete
+Status: Plan 06-01 complete - animation system foundation ready
+Last activity: 2025-01-15 — Plan 06-01 executed (animation easing + useBeatReaction + Equalizer integration)
 
-Progress: ████░░░░░░ 42%
+Progress: █████░░░░░ 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: 12 min
-- Total execution time: 1.6 hours
+- Total execution time: 1.8 hours
 
 **By Phase:**
 
@@ -32,10 +32,11 @@ Progress: ████░░░░░░ 42%
 | 03-beat-detection | 2/2 | 18 min | 9 min |
 | 04-canvas-renderer | 1/1 | 8 min | 8 min |
 | 05-visualizers | 3/3 | 43 min | 14 min |
+| 06-beat-reactivity | 1/2 | 12 min | 12 min |
 
 **Recent Trend:**
-- Last 5 plans: 8, 6, 12, 25 min
-- Trend: Plan 05-03 longer due to user feedback iteration
+- Last 5 plans: 6, 12, 25, 12 min
+- Trend: Consistent execution times
 
 ## Accumulated Context
 
@@ -68,6 +69,10 @@ Recent decisions affecting current work:
 - **2025-01-15 (05-03):** State instead of refs for audio data (React 19 lint compliance)
 - **2025-01-15 (05-03):** Equalizer: 80 time columns scrolling spectrogram at 30 fps
 - **2025-01-15 (05-03):** Circular: 0.3 rad/s rotation with 12-frame trail history
+- **2025-01-15 (06-01):** Ref-based animation loop in useBeatReaction to avoid recursive useCallback lint error
+- **2025-01-15 (06-01):** 150ms decay with easeOutExpo for punchy feel with smooth tail
+- **2025-01-15 (06-01):** Beat effects applied to recent 10 columns with gradual falloff
+- **2025-01-15 (06-01):** Canvas shadowBlur for glow effect triggered at reaction > 0.1
 
 ### Pending Todos
 
@@ -80,5 +85,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2025-01-15
-Stopped at: Phase 5 complete - ready for Phase 6 (Beat Reactivity)
+Stopped at: Plan 06-01 complete - ready for Plan 06-02 (Waveform + Circular + verification)
 Resume file: None
