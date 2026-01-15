@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-15)
 
 **Core value:** Beat-reactive visuals that feel tight and alive. If the visuals don't breathe with the music, nothing else matters.
-**Current focus:** Phase 5 — Visualizers (In Progress)
+**Current focus:** Phase 5 — Visualizers (Complete)
 
 ## Current Position
 
-Phase: 5 of 12 (Visualizers)
-Plan: 02 complete, continuing phase
-Status: Plan 05-02 complete - core visualizers created
-Last activity: 2025-01-15 — Plan 05-02 executed (Equalizer, Waveform, Circular visualizers)
+Phase: 5 of 12 (Visualizers) — COMPLETE
+Plan: 03 of 3 complete
+Status: Phase 5 complete - ready for Phase 6 (Beat Reactivity)
+Last activity: 2025-01-15 — Plan 05-03 executed (VisualizerContainer integration + temporal flow)
 
-Progress: ████░░░░░░ 33%
+Progress: ████░░░░░░ 42%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 10 min
-- Total execution time: 1.18 hours
+- Total plans completed: 8
+- Average duration: 12 min
+- Total execution time: 1.6 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: ████░░░░░░ 33%
 | 02-audio-engine | 1/1 | 15 min | 15 min |
 | 03-beat-detection | 2/2 | 18 min | 9 min |
 | 04-canvas-renderer | 1/1 | 8 min | 8 min |
-| 05-visualizers | 2/? | 18 min | 9 min |
+| 05-visualizers | 3/3 | 43 min | 14 min |
 
 **Recent Trend:**
-- Last 5 plans: 8, 8, 6, 12 min
-- Trend: Consistent execution
+- Last 5 plans: 8, 6, 12, 25 min
+- Trend: Plan 05-03 longer due to user feedback iteration
 
 ## Accumulated Context
 
@@ -64,6 +64,10 @@ Recent decisions affecting current work:
 - **2025-01-15 (05-02):** Visualizer refs updated in useEffect for React 19 compliance
 - **2025-01-15 (05-02):** HSL color wheel for dynamic color generation in visualizers
 - **2025-01-15 (05-02):** Equalizer 64 bars, waveform 400 samples, circular 128 lines
+- **2025-01-15 (05-03):** VisualizerContainer polls audio data via requestAnimationFrame
+- **2025-01-15 (05-03):** State instead of refs for audio data (React 19 lint compliance)
+- **2025-01-15 (05-03):** Equalizer: 80 time columns scrolling spectrogram at 30 fps
+- **2025-01-15 (05-03):** Circular: 0.3 rad/s rotation with 12-frame trail history
 
 ### Pending Todos
 
@@ -76,5 +80,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2025-01-15
-Stopped at: Plan 05-02 complete - core visualizers ready for integration
+Stopped at: Phase 5 complete - ready for Phase 6 (Beat Reactivity)
 Resume file: None
