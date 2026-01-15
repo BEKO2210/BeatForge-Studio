@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { VisualizerProps } from './types';
+import { useBeatReaction } from '../hooks/useBeatReaction';
 
 /**
  * Get rainbow color for angle around circle (0-1 maps to full hue cycle)
@@ -32,10 +33,12 @@ export function CircularSpectrumVisualizer({
   width,
   height,
 }: VisualizerProps): null {
+  // Use beat reaction hook for smooth animated value (180ms decay for responsive feel)
+  const reaction = useBeatReaction(isBeat, beatIntensity, { decayMs: 180 });
+
   // Store current data in refs for render callback
   const frequencyDataRef = useRef<Float32Array | null>(frequencyData);
-  const isBeatRef = useRef(isBeat);
-  const beatIntensityRef = useRef(beatIntensity);
+  const reactionValueRef = useRef(reaction.value);
   const widthRef = useRef(width);
   const heightRef = useRef(height);
 
@@ -43,15 +46,23 @@ export function CircularSpectrumVisualizer({
   const historyRef = useRef<HistoryFrame[]>([]);
   // Start time for rotation calculation (initialized in effect)
   const startTimeRef = useRef<number>(0);
+  // Accumulated rotation offset from beat jumps
+  const rotationOffsetRef = useRef<number>(0);
+  const lastReactionRef = useRef<number>(0);
 
   // Update refs when props change
   useEffect(() => {
     frequencyDataRef.current = frequencyData;
-    isBeatRef.current = isBeat;
-    beatIntensityRef.current = beatIntensity;
+    reactionValueRef.current = reaction.value;
     widthRef.current = width;
     heightRef.current = height;
-  }, [frequencyData, isBeat, beatIntensity, width, height]);
+
+    // Accumulate rotation offset when beat is rising
+    if (reaction.value > lastReactionRef.current && reaction.value > 0.5) {
+      rotationOffsetRef.current += reaction.value * 0.05;
+    }
+    lastReactionRef.current = reaction.value;
+  }, [frequencyData, reaction.value, width, height]);
 
   useEffect(() => {
     if (!renderer) return;
@@ -68,15 +79,15 @@ export function CircularSpectrumVisualizer({
       const data = frequencyDataRef.current;
       const w = widthRef.current;
       const h = heightRef.current;
-      const beat = isBeatRef.current;
-      const intensity = beatIntensityRef.current;
+      const reactionValue = reactionValueRef.current;
       const history = historyRef.current;
 
       const now = performance.now();
       const elapsed = (now - startTimeRef.current) / 1000;
 
-      // Rotation angle based on elapsed time
-      const rotation = elapsed * ROTATION_SPEED;
+      // Rotation angle based on elapsed time + beat-triggered offsets
+      const baseRotation = elapsed * ROTATION_SPEED;
+      const rotation = baseRotation + rotationOffsetRef.current;
 
       // Center and sizing
       const centerX = w / 2;
@@ -85,9 +96,12 @@ export function CircularSpectrumVisualizer({
       const baseRadius = minDimension * 0.15;
       const maxBarLength = minDimension * 0.3;
 
-      // Pulse radius on beat
-      const radiusPulse = beat ? intensity * 15 : 0;
+      // Smooth radius pulse: 0-20px based on eased reaction value
+      const radiusPulse = reactionValue * 20;
       const effectiveRadius = baseRadius + radiusPulse;
+
+      // Beat-reactive line width for current frame: 2.5 → 4 on beat
+      const currentLineWidth = 2.5 + reactionValue * 1.5;
 
       // Update history with current data
       const shouldUpdateHistory = now - lastHistoryUpdate >= historyUpdateInterval;
@@ -145,6 +159,21 @@ export function CircularSpectrumVisualizer({
         );
       }
 
+      // Draw center glow effect on beat
+      if (reactionValue > 0.15) {
+        const glowRadius = effectiveRadius * 0.8;
+        const gradient = ctx.createRadialGradient(
+          centerX, centerY, 0,
+          centerX, centerY, glowRadius
+        );
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${reactionValue * 0.3})`);
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, glowRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
       // Draw current frame (if we have data)
       if (data) {
         const sampleCount = 64;
@@ -156,6 +185,8 @@ export function CircularSpectrumVisualizer({
           currentValues.push(data[dataIndex] ?? 0);
         }
 
+        // Use smooth reaction value for beat effect instead of binary beat
+        const isReacting = reactionValue > 0.1;
         drawFrame(
           ctx,
           currentValues,
@@ -165,8 +196,8 @@ export function CircularSpectrumVisualizer({
           maxBarLength,
           rotation,
           1,
-          beat,
-          beat ? 3 : 2.5
+          isReacting,
+          currentLineWidth
         );
       }
 
