@@ -15,6 +15,7 @@ export class AudioEngine {
   private audioContext: AudioContext | null = null;
   private sourceNode: AudioBufferSourceNode | null = null;
   private gainNode: GainNode | null = null;
+  private analyserNode: AnalyserNode | null = null;
   private audioBuffer: AudioBuffer | null = null;
 
   private state: AudioState = 'idle';
@@ -34,10 +35,27 @@ export class AudioEngine {
   private initAudioContext(): AudioContext {
     if (!this.audioContext) {
       this.audioContext = new AudioContext();
+
+      // Create AnalyserNode for frequency analysis
+      this.analyserNode = this.audioContext.createAnalyser();
+      this.analyserNode.fftSize = 2048; // Good balance of frequency resolution and performance
+      this.analyserNode.smoothingTimeConstant = 0.8; // Smooth transitions, reduce jitter
+
+      // Create GainNode for volume control
       this.gainNode = this.audioContext.createGain();
+
+      // Route: source → analyser → gain → destination
+      this.analyserNode.connect(this.gainNode);
       this.gainNode.connect(this.audioContext.destination);
     }
     return this.audioContext;
+  }
+
+  /**
+   * Get the AnalyserNode for frequency analysis
+   */
+  getAnalyserNode(): AnalyserNode | null {
+    return this.analyserNode;
   }
 
   /**
@@ -130,7 +148,7 @@ export class AudioEngine {
    * Start or resume playback
    */
   play(): void {
-    if (!this.audioBuffer || !this.audioContext || !this.gainNode) {
+    if (!this.audioBuffer || !this.audioContext || !this.gainNode || !this.analyserNode) {
       return;
     }
 
@@ -141,9 +159,10 @@ export class AudioEngine {
     }
 
     // Create new source node (source nodes are single-use)
+    // Route: source → analyser → gain → destination
     this.sourceNode = this.audioContext.createBufferSource();
     this.sourceNode.buffer = this.audioBuffer;
-    this.sourceNode.connect(this.gainNode);
+    this.sourceNode.connect(this.analyserNode);
 
     // Handle playback end
     this.sourceNode.onended = () => {
@@ -265,6 +284,11 @@ export class AudioEngine {
       this.sourceNode.stop();
       this.sourceNode.disconnect();
       this.sourceNode = null;
+    }
+
+    if (this.analyserNode) {
+      this.analyserNode.disconnect();
+      this.analyserNode = null;
     }
 
     if (this.gainNode) {
