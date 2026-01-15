@@ -159,3 +159,318 @@
   height: 400px;
   border-radius: 8px;
 }
+
+/* ============================================================================
+   Text Editor Styles
+   ============================================================================ */
+
+.text-editor {
+  width: 100%;
+  max-width: 600px;
+  padding: 1rem;
+  background: #1a1a1a;
+  border-radius: 8px;
+  border: 1px solid #333333;
+}
+
+.text-editor--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.text-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #333333;
+}
+
+.text-editor-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.text-editor-add-btn {
+  padding: 0.5rem 1rem;
+  background: #646cff;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.text-editor-add-btn:hover {
+  background: #5558e3;
+}
+
+.text-editor-add-btn:disabled {
+  background: #444444;
+  cursor: not-allowed;
+}
+
+.text-editor-empty {
+  color: #666666;
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+.text-editor-layers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.text-editor-layer {
+  background: #242424;
+  border-radius: 6px;
+  border: 1px solid #333333;
+  overflow: hidden;
+}
+
+.text-editor-layer-header {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #2a2a2a;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.text-editor-layer-header:hover {
+  background: #333333;
+}
+
+.text-editor-layer-expand {
+  font-size: 0.75rem;
+  color: #888888;
+  margin-right: 0.75rem;
+}
+
+.text-editor-layer-name {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #cccccc;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-editor-layer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.text-editor-visibility {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.text-editor-visibility input {
+  display: none;
+}
+
+.text-editor-visibility-icon {
+  font-size: 1rem;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.text-editor-visibility:hover .text-editor-visibility-icon {
+  opacity: 1;
+}
+
+.text-editor-delete-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #888888;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.text-editor-delete-btn:hover {
+  background: #441111;
+  border-color: #661111;
+  color: #ff6666;
+}
+
+.text-editor-layer-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.text-editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.text-editor-section h4 {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #888888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.text-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.text-editor-field label {
+  font-size: 0.75rem;
+  color: #888888;
+}
+
+.text-editor-field input[type="text"],
+.text-editor-field select {
+  padding: 0.5rem 0.75rem;
+  background: #1a1a1a;
+  border: 1px solid #444444;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 0.875rem;
+}
+
+.text-editor-field input[type="text"]:focus,
+.text-editor-field select:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.text-editor-field input[type="range"] {
+  width: 100%;
+  height: 4px;
+  background: #444444;
+  border-radius: 2px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.text-editor-field input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #646cff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.text-editor-field input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: #646cff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.text-editor-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.text-editor-field--small {
+  flex: 1;
+}
+
+.text-editor-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid #444444;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.text-editor-toggle-btn {
+  flex: 1;
+  padding: 0.375rem 0.75rem;
+  background: transparent;
+  border: none;
+  color: #888888;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.text-editor-toggle-btn:not(:last-child) {
+  border-right: 1px solid #444444;
+}
+
+.text-editor-toggle-btn:hover {
+  background: #333333;
+  color: #cccccc;
+}
+
+.text-editor-toggle-btn.active {
+  background: #646cff;
+  color: #ffffff;
+}
+
+.text-editor-color-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.text-editor-color-row input[type="color"] {
+  width: 40px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #444444;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.text-editor-color-row input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.text-editor-color-row input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
+.text-editor-color-value {
+  font-size: 0.75rem;
+  color: #888888;
+  font-family: 'Courier New', monospace;
+}
+
+.text-editor-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #cccccc;
+  cursor: pointer;
+}
+
+.text-editor-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #646cff;
+  cursor: pointer;
+}

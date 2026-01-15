@@ -1,0 +1,398 @@
+import { useCallback, useState } from 'react';
+import type { TextLayer, TextAnimation, TextPosition } from '../text/types';
+
+/**
+ * Props for TextEditor component
+ */
+export interface TextEditorProps {
+  /** Current text layers */
+  layers: TextLayer[];
+  /** Callback when layers change */
+  onLayersChange: (layers: TextLayer[]) => void;
+  /** Whether the editor is disabled */
+  disabled?: boolean;
+}
+
+/** Available font families */
+const FONT_FAMILIES = [
+  'Inter, system-ui, sans-serif',
+  'Arial, sans-serif',
+  'Georgia, serif',
+  'Courier New, monospace',
+  'Impact, sans-serif',
+];
+
+/** Available animation types */
+const ANIMATION_OPTIONS: { value: TextAnimation; label: string }[] = [
+  { value: 'none', label: 'None' },
+  { value: 'fade', label: 'Fade' },
+  { value: 'slide-up', label: 'Slide Up' },
+  { value: 'slide-down', label: 'Slide Down' },
+  { value: 'slide-left', label: 'Slide Left' },
+  { value: 'slide-right', label: 'Slide Right' },
+  { value: 'scale', label: 'Scale' },
+  { value: 'pulse', label: 'Pulse' },
+];
+
+/** Available anchor options */
+const ANCHOR_OPTIONS: { value: TextPosition['anchor']; label: string }[] = [
+  { value: 'left', label: 'Left' },
+  { value: 'center', label: 'Center' },
+  { value: 'right', label: 'Right' },
+];
+
+/**
+ * TextEditor - UI for managing text layers
+ *
+ * Allows users to add, edit, and remove text layers with full control
+ * over content, position, styling, and animations.
+ */
+export function TextEditor({
+  layers,
+  onLayersChange,
+  disabled = false,
+}: TextEditorProps) {
+  // Track which layers are expanded
+  const [expandedLayers, setExpandedLayers] = useState<Set<string>>(new Set());
+
+  const handleAddLayer = useCallback(() => {
+    const newLayer: TextLayer = {
+      id: crypto.randomUUID(),
+      content: 'New Text',
+      position: { x: 0.5, y: 0.5, anchor: 'center' },
+      style: {
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#ffffff',
+      },
+      animation: 'none',
+      beatReactive: false,
+      visible: true,
+    };
+
+    onLayersChange([...layers, newLayer]);
+    // Auto-expand the new layer
+    setExpandedLayers((prev) => new Set([...prev, newLayer.id]));
+  }, [layers, onLayersChange]);
+
+  const handleDeleteLayer = useCallback(
+    (id: string) => {
+      onLayersChange(layers.filter((layer) => layer.id !== id));
+      setExpandedLayers((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    },
+    [layers, onLayersChange]
+  );
+
+  const handleUpdateLayer = useCallback(
+    (id: string, updates: Partial<TextLayer>) => {
+      onLayersChange(
+        layers.map((layer) =>
+          layer.id === id ? { ...layer, ...updates } : layer
+        )
+      );
+    },
+    [layers, onLayersChange]
+  );
+
+  const toggleExpanded = useCallback((id: string) => {
+    setExpandedLayers((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  return (
+    <div className={`text-editor ${disabled ? 'text-editor--disabled' : ''}`}>
+      <div className="text-editor-header">
+        <h3 className="text-editor-title">Text Layers</h3>
+        <button
+          className="text-editor-add-btn"
+          onClick={handleAddLayer}
+          disabled={disabled}
+        >
+          + Add Text
+        </button>
+      </div>
+
+      {layers.length === 0 && (
+        <p className="text-editor-empty">No text layers. Click "Add Text" to create one.</p>
+      )}
+
+      <div className="text-editor-layers">
+        {layers.map((layer, index) => {
+          const isExpanded = expandedLayers.has(layer.id);
+
+          return (
+            <div key={layer.id} className="text-editor-layer">
+              <div
+                className="text-editor-layer-header"
+                onClick={() => toggleExpanded(layer.id)}
+              >
+                <span className="text-editor-layer-expand">
+                  {isExpanded ? '▼' : '▶'}
+                </span>
+                <span className="text-editor-layer-name">
+                  Layer {index + 1}: {layer.content.slice(0, 20)}
+                  {layer.content.length > 20 ? '...' : ''}
+                </span>
+                <div className="text-editor-layer-actions">
+                  <label
+                    className="text-editor-visibility"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={layer.visible}
+                      onChange={(e) =>
+                        handleUpdateLayer(layer.id, { visible: e.target.checked })
+                      }
+                      disabled={disabled}
+                    />
+                    <span className="text-editor-visibility-icon">
+                      {layer.visible ? '👁' : '👁‍🗨'}
+                    </span>
+                  </label>
+                  <button
+                    className="text-editor-delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteLayer(layer.id);
+                    }}
+                    disabled={disabled}
+                    aria-label="Delete layer"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              {isExpanded && (
+                <div className="text-editor-layer-content">
+                  {/* Text Content */}
+                  <div className="text-editor-field">
+                    <label>Content</label>
+                    <input
+                      type="text"
+                      value={layer.content}
+                      onChange={(e) =>
+                        handleUpdateLayer(layer.id, { content: e.target.value })
+                      }
+                      disabled={disabled}
+                    />
+                  </div>
+
+                  {/* Position */}
+                  <div className="text-editor-section">
+                    <h4>Position</h4>
+                    <div className="text-editor-row">
+                      <div className="text-editor-field text-editor-field--small">
+                        <label>X ({Math.round(layer.position.x * 100)}%)</label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={layer.position.x}
+                          onChange={(e) =>
+                            handleUpdateLayer(layer.id, {
+                              position: {
+                                ...layer.position,
+                                x: parseFloat(e.target.value),
+                              },
+                            })
+                          }
+                          disabled={disabled}
+                        />
+                      </div>
+                      <div className="text-editor-field text-editor-field--small">
+                        <label>Y ({Math.round(layer.position.y * 100)}%)</label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={layer.position.y}
+                          onChange={(e) =>
+                            handleUpdateLayer(layer.id, {
+                              position: {
+                                ...layer.position,
+                                y: parseFloat(e.target.value),
+                              },
+                            })
+                          }
+                          disabled={disabled}
+                        />
+                      </div>
+                    </div>
+                    <div className="text-editor-field">
+                      <label>Anchor</label>
+                      <select
+                        value={layer.position.anchor}
+                        onChange={(e) =>
+                          handleUpdateLayer(layer.id, {
+                            position: {
+                              ...layer.position,
+                              anchor: e.target.value as TextPosition['anchor'],
+                            },
+                          })
+                        }
+                        disabled={disabled}
+                      >
+                        {ANCHOR_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Style */}
+                  <div className="text-editor-section">
+                    <h4>Style</h4>
+                    <div className="text-editor-field">
+                      <label>Font Family</label>
+                      <select
+                        value={layer.style.fontFamily}
+                        onChange={(e) =>
+                          handleUpdateLayer(layer.id, {
+                            style: { ...layer.style, fontFamily: e.target.value },
+                          })
+                        }
+                        disabled={disabled}
+                      >
+                        {FONT_FAMILIES.map((font) => (
+                          <option key={font} value={font}>
+                            {font.split(',')[0]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="text-editor-row">
+                      <div className="text-editor-field text-editor-field--small">
+                        <label>Size ({layer.style.fontSize}px)</label>
+                        <input
+                          type="range"
+                          min="12"
+                          max="120"
+                          step="1"
+                          value={layer.style.fontSize}
+                          onChange={(e) =>
+                            handleUpdateLayer(layer.id, {
+                              style: {
+                                ...layer.style,
+                                fontSize: parseInt(e.target.value, 10),
+                              },
+                            })
+                          }
+                          disabled={disabled}
+                        />
+                      </div>
+                      <div className="text-editor-field text-editor-field--small">
+                        <label>Weight</label>
+                        <div className="text-editor-toggle">
+                          <button
+                            className={`text-editor-toggle-btn ${
+                              layer.style.fontWeight === 'normal' ? 'active' : ''
+                            }`}
+                            onClick={() =>
+                              handleUpdateLayer(layer.id, {
+                                style: { ...layer.style, fontWeight: 'normal' },
+                              })
+                            }
+                            disabled={disabled}
+                          >
+                            Normal
+                          </button>
+                          <button
+                            className={`text-editor-toggle-btn ${
+                              layer.style.fontWeight === 'bold' ? 'active' : ''
+                            }`}
+                            onClick={() =>
+                              handleUpdateLayer(layer.id, {
+                                style: { ...layer.style, fontWeight: 'bold' },
+                              })
+                            }
+                            disabled={disabled}
+                          >
+                            Bold
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-editor-field">
+                      <label>Color</label>
+                      <div className="text-editor-color-row">
+                        <input
+                          type="color"
+                          value={layer.style.color}
+                          onChange={(e) =>
+                            handleUpdateLayer(layer.id, {
+                              style: { ...layer.style, color: e.target.value },
+                            })
+                          }
+                          disabled={disabled}
+                        />
+                        <span className="text-editor-color-value">
+                          {layer.style.color}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Animation */}
+                  <div className="text-editor-section">
+                    <h4>Animation</h4>
+                    <div className="text-editor-field">
+                      <label>Type</label>
+                      <select
+                        value={layer.animation}
+                        onChange={(e) =>
+                          handleUpdateLayer(layer.id, {
+                            animation: e.target.value as TextAnimation,
+                          })
+                        }
+                        disabled={disabled}
+                      >
+                        {ANIMATION_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="text-editor-field">
+                      <label className="text-editor-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={layer.beatReactive}
+                          onChange={(e) =>
+                            handleUpdateLayer(layer.id, {
+                              beatReactive: e.target.checked,
+                            })
+                          }
+                          disabled={disabled}
+                        />
+                        Beat Reactive (pulses with music)
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
