@@ -21,18 +21,20 @@ export function CircularSpectrumVisualizer({
   height,
 }: VisualizerProps): null {
   // Store current data in refs for render callback
-  const frequencyDataRef = useRef<Float32Array | null>(null);
-  const isBeatRef = useRef(false);
-  const beatIntensityRef = useRef(0);
+  const frequencyDataRef = useRef<Float32Array | null>(frequencyData);
+  const isBeatRef = useRef(isBeat);
+  const beatIntensityRef = useRef(beatIntensity);
   const widthRef = useRef(width);
   const heightRef = useRef(height);
 
   // Update refs when props change
-  frequencyDataRef.current = frequencyData;
-  isBeatRef.current = isBeat;
-  beatIntensityRef.current = beatIntensity;
-  widthRef.current = width;
-  heightRef.current = height;
+  useEffect(() => {
+    frequencyDataRef.current = frequencyData;
+    isBeatRef.current = isBeat;
+    beatIntensityRef.current = beatIntensity;
+    widthRef.current = width;
+    heightRef.current = height;
+  }, [frequencyData, isBeat, beatIntensity, width, height]);
 
   useEffect(() => {
     if (!renderer) return;

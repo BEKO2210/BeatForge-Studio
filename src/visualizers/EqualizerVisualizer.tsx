@@ -25,16 +25,18 @@ export function EqualizerVisualizer({
   height,
 }: VisualizerProps): null {
   // Store current data in refs for render callback
-  const frequencyDataRef = useRef<Float32Array | null>(null);
-  const isBeatRef = useRef(false);
+  const frequencyDataRef = useRef<Float32Array | null>(frequencyData);
+  const isBeatRef = useRef(isBeat);
   const widthRef = useRef(width);
   const heightRef = useRef(height);
 
   // Update refs when props change
-  frequencyDataRef.current = frequencyData;
-  isBeatRef.current = isBeat;
-  widthRef.current = width;
-  heightRef.current = height;
+  useEffect(() => {
+    frequencyDataRef.current = frequencyData;
+    isBeatRef.current = isBeat;
+    widthRef.current = width;
+    heightRef.current = height;
+  }, [frequencyData, isBeat, width, height]);
 
   useEffect(() => {
     if (!renderer) return;

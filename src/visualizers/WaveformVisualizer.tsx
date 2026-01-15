@@ -12,16 +12,18 @@ export function WaveformVisualizer({
   height,
 }: VisualizerProps): null {
   // Store current data in refs for render callback
-  const timeDomainDataRef = useRef<Float32Array | null>(null);
-  const isBeatRef = useRef(false);
+  const timeDomainDataRef = useRef<Float32Array | null>(timeDomainData);
+  const isBeatRef = useRef(isBeat);
   const widthRef = useRef(width);
   const heightRef = useRef(height);
 
   // Update refs when props change
-  timeDomainDataRef.current = timeDomainData;
-  isBeatRef.current = isBeat;
-  widthRef.current = width;
-  heightRef.current = height;
+  useEffect(() => {
+    timeDomainDataRef.current = timeDomainData;
+    isBeatRef.current = isBeat;
+    widthRef.current = width;
+    heightRef.current = height;
+  }, [timeDomainData, isBeat, width, height]);
 
   useEffect(() => {
     if (!renderer) return;
