@@ -1,0 +1,121 @@
+.beat-debug {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1.5rem 2rem;
+  background-color: #1a1a2e;
+  border-radius: 12px;
+  border: 1px solid #2a2a4e;
+}
+
+/* Frequency bars container */
+.beat-debug-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  height: 120px;
+}
+
+/* Individual bar container */
+.beat-debug-bar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 48px;
+}
+
+/* The actual bar that grows */
+.beat-debug-bar {
+  width: 100%;
+  min-height: 4px;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.05s ease-out;
+}
+
+/* Bar colors */
+.beat-debug-bar--bass {
+  background: linear-gradient(to top, #ff4444, #ff6666);
+  box-shadow: 0 0 10px rgba(255, 68, 68, 0.4);
+}
+
+.beat-debug-bar--mid {
+  background: linear-gradient(to top, #44ff44, #66ff66);
+  box-shadow: 0 0 10px rgba(68, 255, 68, 0.4);
+}
+
+.beat-debug-bar--treble {
+  background: linear-gradient(to top, #4444ff, #6666ff);
+  box-shadow: 0 0 10px rgba(68, 68, 255, 0.4);
+}
+
+/* Bar labels */
+.beat-debug-bar-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #888899;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.beat-debug-bar-value {
+  font-size: 0.625rem;
+  color: #666677;
+  font-family: monospace;
+}
+
+/* Beat indicator */
+.beat-debug-indicator-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 60px;
+}
+
+.beat-debug-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #333344;
+  border: 2px solid #444455;
+  transition: transform 0.1s ease-out, background-color 0.1s ease-out, box-shadow 0.1s ease-out;
+}
+
+.beat-debug-indicator.active {
+  transform: scale(1.5);
+  background-color: #ff4444;
+  border-color: #ff6666;
+  box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
+}
+
+.beat-debug-indicator-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ff4444;
+  text-transform: uppercase;
+  min-height: 1.125rem;
+}
+
+/* Beat count */
+.beat-debug-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.beat-debug-count-label {
+  font-size: 0.75rem;
+  color: #888899;
+}
+
+.beat-debug-count-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: monospace;
+  min-width: 3ch;
+  text-align: center;
+}
