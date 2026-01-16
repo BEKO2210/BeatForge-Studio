@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import type { AudioEngine } from '../audio/AudioEngine';
 import { useRenderer } from '../hooks/useRenderer';
 import { useBeatDetector } from '../hooks/useBeatDetector';
+import { useCameraShake } from '../hooks/useCameraShake';
 import { EqualizerVisualizer } from './EqualizerVisualizer';
 import { EqualizerV2Visualizer } from './EqualizerV2Visualizer';
 import { WaveformVisualizer } from './WaveformVisualizer';
@@ -9,6 +10,7 @@ import { CircularSpectrumVisualizer } from './CircularSpectrumVisualizer';
 import { TextLayerRenderer, type TextLayer } from '../text';
 import { BackgroundRenderer, type BackgroundConfig } from '../background';
 import { DEFAULT_BACKGROUND } from '../background';
+import { renderVignette } from '../effects';
 import type { VisualizerType, CircularSettings, ClubSettings } from './types';
 import { DEFAULT_CIRCULAR_SETTINGS, DEFAULT_CLUB_SETTINGS } from './types';
 
@@ -40,6 +42,7 @@ export function VisualizerContainer({
     timeDomainData: null,
   });
   const [showSettings, setShowSettings] = useState(false);
+  const [effectsEnabled, setEffectsEnabled] = useState(true);
 
   // Visualizer-specific settings
   const [circularSettings, setCircularSettings] = useState<CircularSettings>(DEFAULT_CIRCULAR_SETTINGS);
@@ -66,6 +69,13 @@ export function VisualizerContainer({
 
   // Beat detection for isBeat and intensity
   const { beatInfo } = useBeatDetector(audioEngine);
+
+  // Camera shake effect - only active when effects enabled
+  const { offsetX, offsetY } = useCameraShake(
+    effectsEnabled && (beatInfo?.isBeat ?? false),
+    beatInfo?.intensity ?? 0,
+    { maxOffset: 8, decayMs: 100, threshold: 0.6 }
+  );
 
   // Poll beat detector for raw audio data each frame
   useEffect(() => {
@@ -111,6 +121,21 @@ export function VisualizerContainer({
       }
     };
   }, [audioEngine]);
+
+  // Vignette effect - register as overlay layer
+  useEffect(() => {
+    if (!renderer || !effectsEnabled) return;
+
+    const width = renderer.width;
+    const height = renderer.height;
+
+    const vignetteCallback = (ctx: CanvasRenderingContext2D) => {
+      renderVignette(ctx, width, height, { intensity: 0.35, softness: 0.5 });
+    };
+
+    // Register at overlay layer (after visualizers, before text)
+    return renderer.onRender(vignetteCallback, 'overlay');
+  }, [renderer, effectsEnabled]);
 
   // Common props for all visualizers
   const visualizerProps = {
@@ -165,6 +190,13 @@ export function VisualizerContainer({
             Settings
           </button>
         )}
+        <button
+          className={`visualizer-selector-btn visualizer-fx-btn ${effectsEnabled ? 'active' : ''}`}
+          onClick={() => setEffectsEnabled(!effectsEnabled)}
+          title="Toggle Effects (Camera Shake + Vignette)"
+        >
+          FX
+        </button>
       </div>
 
       {/* Visualizer settings panel */}
@@ -299,7 +331,10 @@ export function VisualizerContainer({
       )}
 
       {/* Canvas for visualizer rendering */}
-      <div className="visualizer-canvas-wrapper">
+      <div
+        className="visualizer-canvas-wrapper"
+        style={effectsEnabled ? { transform: `translate(${offsetX}px, ${offsetY}px)` } : undefined}
+      >
         <canvas ref={canvasRef} className="visualizer-canvas" />
       </div>
 
