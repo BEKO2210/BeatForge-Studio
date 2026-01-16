@@ -1,0 +1,202 @@
+/* ============================================================================
+   Export Panel Styles
+   ============================================================================ */
+
+.export-panel {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.75rem;
+  background: #1a1a1a;
+  border-radius: 6px;
+  border: 1px solid #333333;
+}
+
+@media (min-width: 768px) {
+  .export-panel {
+    max-width: 600px;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+}
+
+.export-panel--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.export-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #333333;
+}
+
+@media (min-width: 768px) {
+  .export-panel-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+  }
+}
+
+.export-panel-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .export-panel-title {
+    font-size: 1rem;
+  }
+}
+
+/* Resolution selector */
+.export-resolution-selector {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .export-resolution-selector {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.export-resolution-btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid #444444;
+  border-radius: 6px;
+  color: #888888;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+@media (min-width: 768px) {
+  .export-resolution-btn {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+.export-resolution-btn:hover:not(:disabled) {
+  border-color: #555555;
+  color: #aaaaaa;
+}
+
+.export-resolution-btn.active {
+  background: #646cff;
+  border-color: #646cff;
+  color: #ffffff;
+}
+
+.export-resolution-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Export controls */
+.export-controls {
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .export-controls {
+    margin-bottom: 1rem;
+  }
+}
+
+.export-btn {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+@media (min-width: 768px) {
+  .export-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+}
+
+.export-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  transform: translateY(-1px);
+}
+
+.export-btn:disabled {
+  background: #444444;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.export-btn--cancel {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.export-btn--cancel:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+/* Progress bar */
+.export-progress {
+  height: 6px;
+  background: #333333;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .export-progress {
+    height: 8px;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+  }
+}
+
+.export-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #646cff, #9333ea);
+  border-radius: 3px;
+  transition: width 0.15s ease-out;
+}
+
+@media (min-width: 768px) {
+  .export-progress-bar {
+    border-radius: 4px;
+  }
+}
+
+/* Status text */
+.export-status {
+  font-size: 0.75rem;
+  color: #888888;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .export-status {
+    font-size: 0.875rem;
+  }
+}
+
+.export-status--error {
+  color: #ef4444;
+}
