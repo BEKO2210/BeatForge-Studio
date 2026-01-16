@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-15)
 
 **Core value:** Beat-reactive visuals that feel tight and alive. If the visuals don't breathe with the music, nothing else matters.
-**Current focus:** Phase 11 — Export Pipeline (Plan 01 COMPLETE)
+**Current focus:** Phase 11 COMPLETE — Ready for Phase 12 (Polish & Deploy)
 
 ## Current Position
 
-Phase: 11 of 12 (Export Pipeline)
-Plan: 01 of 2 complete
-Status: VideoExporter infrastructure ready for UI integration
-Last activity: 2025-01-16 — Plan 11-01 executed (VideoExporter, export types, audio routing)
+Phase: 11 of 12 (Export Pipeline) ✓ COMPLETE
+Plan: 2 of 2 complete
+Status: Video export fully functional with UI
+Last activity: 2025-01-16 — Plan 11-02 executed (ExportPanel, canvas ref, App integration)
 
-Progress: █████░░░░░ 50%
+Progress: ██████████ 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 16
 - Average duration: 10 min
-- Total execution time: 2.7 hours
+- Total execution time: 2.8 hours
 
 **By Phase:**
 
@@ -37,10 +37,10 @@ Progress: █████░░░░░ 50%
 | 08-background-system | 1/1 | 10 min | 10 min |
 | 09-effects | 1/1 | 9 min | 9 min |
 | 10-presets | 1/1 | 12 min | 12 min |
-| 11-export-pipeline | 1/2 | 8 min | 8 min |
+| 11-export-pipeline | 2/2 | 14 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 6, 10, 9, 12, 8 min
+- Last 5 plans: 10, 9, 12, 8, 6 min
 - Trend: Consistent execution times
 
 ## Accumulated Context
@@ -104,6 +104,9 @@ Recent decisions affecting current work:
 - **2025-01-16 (11-01):** 5 Mbps video bitrate for quality balance
 - **2025-01-16 (11-01):** 100ms MediaRecorder chunk intervals for smooth progress
 - **2025-01-16 (11-01):** Parallel audio routing - speakers + capture simultaneously
+- **2025-01-16 (11-02):** onCanvasReady callback pattern for canvas access (simpler than forwardRef)
+- **2025-01-16 (11-02):** ExportPanel positioned between BackgroundEditor and VisualizerContainer
+- **2025-01-16 (11-02):** Green gradient for export button, red for cancel - clear visual distinction
 
 ### Pending Todos
 
@@ -116,5 +119,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2025-01-16
-Stopped at: Phase 11 Plan 01 complete - VideoExporter infrastructure ready
+Stopped at: Phase 11 COMPLETE - Export pipeline fully functional
 Resume file: None
+Next: Phase 12 (Polish & Deploy)
