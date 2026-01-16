@@ -22,5 +22,6 @@ export {
   DEFAULT_IMAGE,
 } from './types';
 
-// Renderer - exported in Task 2
-// export { BackgroundRenderer } from './BackgroundRenderer';
+// Renderer
+export { BackgroundRenderer } from './BackgroundRenderer';
+export type { BackgroundRendererProps } from './BackgroundRenderer';
