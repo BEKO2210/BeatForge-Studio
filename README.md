@@ -1,73 +1,95 @@
-# React + TypeScript + Vite
+# BeatForge Studio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/BEKO2210/BeatForge-Studio)
 
-Currently, two official plugins are available:
+BeatForge Studio is a browser-based music visualizer that transforms your audio into professional, beat-reactive videos. Built with React, TypeScript, and Vite, it runs entirely in your browser with no server-side processing required. Upload your music, choose a visual style, add text, and export a video ready for social media.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+**[Live Demo](https://beko2210.github.io/BeatForge-Studio/)**
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Real-Time Audio Analysis**: Utilizes the Web Audio API for high-performance beat detection and frequency analysis.
+- **Beat-Reactive Visualizers**: A collection of dynamic visualizers that pulse, glow, and animate in sync with your music. Includes:
+  - **Spectrum**: A scrolling spectrogram showing frequency over time.
+  - **Club**: A high-energy equalizer with bass emphasis and peak holds.
+  - **Wave**: A continuous line waveform with a mirrored reflection.
+  - **Circular**: A radial frequency spectrum with rotating trails.
+- **Customizable Overlays**:
+  - **Text Layers**: Add multiple animated text layers with custom fonts, styles, and beat-reactive effects.
+  - **Backgrounds**: Set a solid color, create multi-stop linear/radial gradients, or upload your own image.
+- **Cinematic Effects**: Add a professional touch with camera shake on strong beats and a subtle vignette overlay.
+- **Style Presets**: Instantly switch between four distinct visual themes tailored for different platforms and aesthetics:
+  - **TikTok**: High-energy, vertical 9:16 format with bold text.
+  - **YouTube**: Cinematic, 16:9 widescreen with calm transitions.
+  - **Lyric Video**: Text-focused design with soft backgrounds.
+  - **Club Visualizer**: Dark, neon aesthetic with maximum energy.
+- **Video Export**: Export your creation as a **WebM** video file with synchronized audio, available in 720p and 1080p resolutions.
+- **Progressive Web App (PWA)**: Installable on mobile and desktop for offline access.
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Framework**: React 19 + TypeScript
+- **Build Tool**: Vite
+- **Audio Processing**: Web Audio API (`AudioContext`, `AnalyserNode`)
+- **Rendering**: HTML5 Canvas 2D API (`requestAnimationFrame`)
+- **Video Export**: MediaRecorder API (capturing `canvas.captureStream` and an `AudioDestinationNode` stream)
+- **Offline Support**: PWA with Workbox
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## How It Works
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+BeatForge Studio is a fully client-side application that leverages modern browser APIs to create music visualizations.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1.  **Audio Engine**: The `AudioEngine` class manages audio loading, playback, and analysis. It uses an `AnalyserNode` to extract frequency and time-domain data from the audio source.
+2.  **Beat Detection**: The `BeatDetector` class processes the `AnalyserNode`'s output, using an energy-based algorithm on bass frequencies to detect beats in real-time. It provides a `beatInfo` object on every frame.
+3.  **Rendering Engine**: A custom `Renderer` class orchestrates a 60 FPS `requestAnimationFrame` loop, managing a dedicated Canvas element. It supports layered rendering, ensuring backgrounds, visualizers, and text are drawn in the correct order.
+4.  **Reactivity**: The `useBeatReaction` hook converts discrete beat events into smooth, animated values using custom easing functions. This allows visual elements (like scale, brightness, and glow) to pulse naturally with the music. The `useCameraShake` hook applies a similar principle for cinematic effects.
+5.  **Export Pipeline**: The `VideoExporter` captures the canvas visuals using `captureStream()` and simultaneously routes the audio to a `MediaStreamAudioDestinationNode`. These two streams are combined by the `MediaRecorder` API and encoded into a WebM video file, which is then downloaded by the user.
+
+## Project Structure
+
+The codebase is organized into modules based on functionality:
+
+```
+src/
+├── audio/          # Core audio processing, beat detection
+├── components/     # UI components (player, editors, etc.)
+├── visualizers/    # Visualizer components and the main container
+├── renderer/       # Canvas 2D rendering engine
+├── text/           # Text rendering and animation system
+├── background/     # Background rendering system
+├── effects/        # Post-processing effects (vignette, shake)
+├── export/         # Video export logic
+├── hooks/          # Custom React hooks for reactivity
+├── presets/        # Definitions for the four visual style presets
+├── tier/           # Free/Pro tier logic
+├── App.tsx         # Main application component
+└── main.tsx        # Application entry point
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+To run the project locally, follow these steps:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/beko2210/BeatForge-Studio.git
+    cd BeatForge-Studio
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Start the development server:**
+    ```bash
+    npm run dev
+    ```
+    The application will be available at `http://localhost:5173`.
+
+## Available Scripts
+
+-   `npm run dev`: Starts the Vite development server with Hot Module Replacement (HMR).
+-   `npm run build`: Compiles the TypeScript code and bundles the application for production.
+-   `npm run preview`: Serves the production build locally to preview the final app.
+-   `npm run lint`: Runs ESLint to check for code quality and style issues.
