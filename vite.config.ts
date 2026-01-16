@@ -34,7 +34,7 @@ export default defineConfig({
         theme_color: '#646cff',
         background_color: '#0a0a0a',
         display: 'standalone',
-        start_url: '/Meet-the-Beat-main/',
+        start_url: '/BeatForge-Studio/',
         icons: [
           {
             src: 'icon.svg',
@@ -52,7 +52,7 @@ export default defineConfig({
       },
     }),
   ],
-  base: '/Meet-the-Beat-main/',
+  base: '/BeatForge-Studio/',
   build: {
     outDir: 'dist',
   },
