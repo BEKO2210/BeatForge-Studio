@@ -5,6 +5,7 @@ import { AudioUpload } from './components/AudioUpload';
 import { AudioPlayer } from './components/AudioPlayer';
 import { TextEditor } from './components/TextEditor';
 import { BackgroundEditor } from './components/BackgroundEditor';
+import { ExportPanel } from './components/ExportPanel';
 import { VisualizerContainer } from './visualizers';
 import type { VisualizerType, CircularSettings, ClubSettings } from './visualizers/types';
 import type { TextLayer } from './text';
@@ -39,6 +40,9 @@ function App() {
   const [circularSettings, setCircularSettings] = useState<CircularSettings | undefined>(DEFAULT_PRESET.visualizer.circularSettings);
   const [clubSettings, setClubSettings] = useState<ClubSettings | undefined>(DEFAULT_PRESET.visualizer.clubSettings);
   const [effectsConfig, setEffectsConfig] = useState<EffectsConfig>(DEFAULT_PRESET.effects);
+
+  // Canvas element for export
+  const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | null>(null);
 
   // Apply preset
   const applyPreset = useCallback((preset: PresetConfig) => {
@@ -174,6 +178,12 @@ function App() {
               disabled={isLoading}
             />
 
+            <ExportPanel
+              canvas={canvasElement}
+              audioEngine={audioEngine}
+              disabled={isLoading}
+            />
+
             <VisualizerContainer
               audioEngine={audioEngine}
               textLayers={textLayers}
@@ -186,6 +196,7 @@ function App() {
               onVisualizerChange={setVisualizerType}
               onCircularSettingsChange={setCircularSettings}
               onClubSettingsChange={setClubSettings}
+              onCanvasReady={setCanvasElement}
             />
           </div>
         )}
