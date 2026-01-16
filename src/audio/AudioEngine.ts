@@ -19,6 +19,7 @@ export class AudioEngine {
   private analyserNode: AnalyserNode | null = null;
   private beatDetector: BeatDetector | null = null;
   private audioBuffer: AudioBuffer | null = null;
+  private mediaStreamDest: MediaStreamAudioDestinationNode | null = null;
 
   private state: AudioState = 'idle';
   private startTime = 0;
@@ -298,6 +299,40 @@ export class AudioEngine {
   }
 
   /**
+   * Create MediaStream destination for audio capture during export.
+   * Connects in parallel with speaker output so audio plays while recording.
+   * @returns MediaStream containing audio data for recording
+   */
+  createExportDestination(): MediaStream {
+    const context = this.initAudioContext();
+
+    // Create MediaStreamAudioDestinationNode for capturing audio
+    this.mediaStreamDest = context.createMediaStreamDestination();
+
+    // Connect gain node to media stream dest (in parallel with speakers)
+    if (this.gainNode) {
+      this.gainNode.connect(this.mediaStreamDest);
+    }
+
+    return this.mediaStreamDest.stream;
+  }
+
+  /**
+   * Disconnect export destination when recording stops.
+   * Should be called after export completes.
+   */
+  disconnectExportDestination(): void {
+    if (this.mediaStreamDest && this.gainNode) {
+      try {
+        this.gainNode.disconnect(this.mediaStreamDest);
+      } catch {
+        // May already be disconnected
+      }
+    }
+    this.mediaStreamDest = null;
+  }
+
+  /**
    * Clean up resources
    */
   dispose(): void {
@@ -316,6 +351,9 @@ export class AudioEngine {
 
     // Clean up beat detector
     this.beatDetector = null;
+
+    // Clean up export destination
+    this.disconnectExportDestination();
 
     if (this.gainNode) {
       this.gainNode.disconnect();
