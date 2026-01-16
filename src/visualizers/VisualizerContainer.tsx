@@ -1,12 +1,16 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import type { AudioEngine } from '../audio/AudioEngine';
 import { useRenderer } from '../hooks/useRenderer';
 import { useBeatDetector } from '../hooks/useBeatDetector';
 import { EqualizerVisualizer } from './EqualizerVisualizer';
+import { EqualizerV2Visualizer } from './EqualizerV2Visualizer';
 import { WaveformVisualizer } from './WaveformVisualizer';
 import { CircularSpectrumVisualizer } from './CircularSpectrumVisualizer';
 import { TextLayerRenderer, type TextLayer } from '../text';
-import type { VisualizerType } from './types';
+import { BackgroundRenderer, type BackgroundConfig } from '../background';
+import { DEFAULT_BACKGROUND } from '../background';
+import type { VisualizerType, CircularSettings, ClubSettings } from './types';
+import { DEFAULT_CIRCULAR_SETTINGS, DEFAULT_CLUB_SETTINGS } from './types';
 
 interface AudioDataState {
   frequencyData: Float32Array | null;
@@ -16,6 +20,7 @@ interface AudioDataState {
 interface VisualizerContainerProps {
   audioEngine: AudioEngine | null;
   textLayers?: TextLayer[];
+  backgroundConfig?: BackgroundConfig;
   className?: string;
 }
 
@@ -26,6 +31,7 @@ interface VisualizerContainerProps {
 export function VisualizerContainer({
   audioEngine,
   textLayers,
+  backgroundConfig = DEFAULT_BACKGROUND,
   className,
 }: VisualizerContainerProps) {
   const [selectedVisualizer, setSelectedVisualizer] = useState<VisualizerType>('equalizer');
@@ -33,10 +39,30 @@ export function VisualizerContainer({
     frequencyData: null,
     timeDomainData: null,
   });
+  const [showSettings, setShowSettings] = useState(false);
 
-  // Canvas and renderer
+  // Visualizer-specific settings
+  const [circularSettings, setCircularSettings] = useState<CircularSettings>(DEFAULT_CIRCULAR_SETTINGS);
+  const [clubSettings, setClubSettings] = useState<ClubSettings>(DEFAULT_CLUB_SETTINGS);
+
+  // Update handlers for settings
+  const updateCircularSetting = useCallback(<K extends keyof CircularSettings>(
+    key: K,
+    value: CircularSettings[K]
+  ) => {
+    setCircularSettings(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  const updateClubSetting = useCallback(<K extends keyof ClubSettings>(
+    key: K,
+    value: ClubSettings[K]
+  ) => {
+    setClubSettings(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  // Canvas and renderer - height is controlled by CSS aspect-ratio
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { renderer } = useRenderer(canvasRef, { height: 400 });
+  const { renderer } = useRenderer(canvasRef);
 
   // Beat detection for isBeat and intensity
   const { beatInfo } = useBeatDetector(audioEngine);
@@ -95,7 +121,12 @@ export function VisualizerContainer({
     beatIntensity: beatInfo?.intensity ?? 0,
     width: renderer?.width ?? 800,
     height: renderer?.height ?? 400,
+    circularSettings,
+    clubSettings,
   };
+
+  // Check if current visualizer has settings
+  const hasSettings = selectedVisualizer === 'circular' || selectedVisualizer === 'equalizer-v2';
 
   return (
     <div className={`visualizer-container ${className ?? ''}`}>
@@ -105,13 +136,19 @@ export function VisualizerContainer({
           className={`visualizer-selector-btn ${selectedVisualizer === 'equalizer' ? 'active' : ''}`}
           onClick={() => setSelectedVisualizer('equalizer')}
         >
-          Equalizer
+          Spectrum
+        </button>
+        <button
+          className={`visualizer-selector-btn ${selectedVisualizer === 'equalizer-v2' ? 'active' : ''}`}
+          onClick={() => setSelectedVisualizer('equalizer-v2')}
+        >
+          Club
         </button>
         <button
           className={`visualizer-selector-btn ${selectedVisualizer === 'waveform' ? 'active' : ''}`}
           onClick={() => setSelectedVisualizer('waveform')}
         >
-          Waveform
+          Wave
         </button>
         <button
           className={`visualizer-selector-btn ${selectedVisualizer === 'circular' ? 'active' : ''}`}
@@ -119,15 +156,164 @@ export function VisualizerContainer({
         >
           Circular
         </button>
+        {hasSettings && (
+          <button
+            className={`visualizer-selector-btn visualizer-settings-btn ${showSettings ? 'active' : ''}`}
+            onClick={() => setShowSettings(!showSettings)}
+            title="Visualizer Settings"
+          >
+            Settings
+          </button>
+        )}
       </div>
+
+      {/* Visualizer settings panel */}
+      {showSettings && hasSettings && (
+        <div className="visualizer-settings">
+          {selectedVisualizer === 'circular' && (
+            <>
+              <div className="visualizer-settings-field">
+                <label>Ring Gap ({Math.round(circularSettings.ringGap * 100)}%)</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={circularSettings.ringGap}
+                  onChange={(e) => updateCircularSetting('ringGap', parseFloat(e.target.value))}
+                />
+              </div>
+              <div className="visualizer-settings-field">
+                <label>Rotation Speed ({circularSettings.rotationSpeed > 0 ? '+' : ''}{circularSettings.rotationSpeed.toFixed(1)}x)</label>
+                <input
+                  type="range"
+                  min="-2"
+                  max="2"
+                  step="0.1"
+                  value={circularSettings.rotationSpeed}
+                  onChange={(e) => updateCircularSetting('rotationSpeed', parseFloat(e.target.value))}
+                />
+              </div>
+              <div className="visualizer-settings-field">
+                <label>Start Angle ({Math.round(circularSettings.startAngle)}°)</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="360"
+                  step="15"
+                  value={circularSettings.startAngle}
+                  onChange={(e) => updateCircularSetting('startAngle', parseFloat(e.target.value))}
+                />
+              </div>
+              <div className="visualizer-settings-field">
+                <label>Energy Spread</label>
+                <div className="visualizer-settings-toggle">
+                  <button
+                    className={`visualizer-toggle-btn ${circularSettings.energySpread === 'linear' ? 'active' : ''}`}
+                    onClick={() => updateCircularSetting('energySpread', 'linear')}
+                  >
+                    Linear
+                  </button>
+                  <button
+                    className={`visualizer-toggle-btn ${circularSettings.energySpread === 'log' ? 'active' : ''}`}
+                    onClick={() => updateCircularSetting('energySpread', 'log')}
+                  >
+                    Log
+                  </button>
+                </div>
+              </div>
+              <div className="visualizer-settings-field">
+                <label>Bar Spread ({circularSettings.barSpread.toFixed(1)}x)</label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value={circularSettings.barSpread}
+                  onChange={(e) => updateCircularSetting('barSpread', parseFloat(e.target.value))}
+                />
+              </div>
+              <div className="visualizer-settings-field">
+                <label>Sensitivity ({Math.round(circularSettings.sensitivity * 100)}%)</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={circularSettings.sensitivity}
+                  onChange={(e) => updateCircularSetting('sensitivity', parseFloat(e.target.value))}
+                />
+              </div>
+            </>
+          )}
+
+          {selectedVisualizer === 'equalizer-v2' && (
+            <>
+              <div className="visualizer-settings-field">
+                <label>Bass Gain ({clubSettings.bassGain.toFixed(1)}x)</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  value={clubSettings.bassGain}
+                  onChange={(e) => updateClubSetting('bassGain', parseFloat(e.target.value))}
+                />
+              </div>
+              <div className="visualizer-settings-field">
+                <label>Sensitivity ({Math.round(clubSettings.sensitivity * 100)}%)</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={clubSettings.sensitivity}
+                  onChange={(e) => updateClubSetting('sensitivity', parseFloat(e.target.value))}
+                />
+              </div>
+              <div className="visualizer-settings-field">
+                <label>Vertical Scale ({Math.round(clubSettings.verticalScale * 100)}%)</label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="1.5"
+                  step="0.05"
+                  value={clubSettings.verticalScale}
+                  onChange={(e) => updateClubSetting('verticalScale', parseFloat(e.target.value))}
+                />
+              </div>
+              <div className="visualizer-settings-field">
+                <label>Decay ({Math.round(clubSettings.decay * 100)}%)</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={clubSettings.decay}
+                  onChange={(e) => updateClubSetting('decay', parseFloat(e.target.value))}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Canvas for visualizer rendering */}
       <div className="visualizer-canvas-wrapper">
         <canvas ref={canvasRef} className="visualizer-canvas" />
       </div>
 
+      {/* Render background (renders at layer priority 0) */}
+      <BackgroundRenderer
+        renderer={renderer}
+        config={backgroundConfig}
+        width={renderer?.width ?? 800}
+        height={renderer?.height ?? 400}
+      />
+
       {/* Render selected visualizer (registers render callback) */}
       {selectedVisualizer === 'equalizer' && <EqualizerVisualizer {...visualizerProps} />}
+      {selectedVisualizer === 'equalizer-v2' && <EqualizerV2Visualizer {...visualizerProps} />}
       {selectedVisualizer === 'waveform' && <WaveformVisualizer {...visualizerProps} />}
       {selectedVisualizer === 'circular' && <CircularSpectrumVisualizer {...visualizerProps} />}
 

@@ -4,8 +4,10 @@ import type { AudioState } from './audio/types';
 import { AudioUpload } from './components/AudioUpload';
 import { AudioPlayer } from './components/AudioPlayer';
 import { TextEditor } from './components/TextEditor';
+import { BackgroundEditor } from './components/BackgroundEditor';
 import { VisualizerContainer } from './visualizers';
 import type { TextLayer } from './text';
+import { DEFAULT_BACKGROUND, type BackgroundConfig } from './background';
 import './App.css';
 
 function App() {
@@ -16,6 +18,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [engineKey, setEngineKey] = useState(0);
   const [textLayers, setTextLayers] = useState<TextLayer[]>([]);
+  const [backgroundConfig, setBackgroundConfig] = useState<BackgroundConfig>(DEFAULT_BACKGROUND);
 
   // Create AudioEngine with memoization - recreates when engineKey changes
   const audioEngine = useMemo(() => {
@@ -116,7 +119,17 @@ function App() {
               disabled={isLoading}
             />
 
-            <VisualizerContainer audioEngine={audioEngine} textLayers={textLayers} />
+            <BackgroundEditor
+              config={backgroundConfig}
+              onConfigChange={setBackgroundConfig}
+              disabled={isLoading}
+            />
+
+            <VisualizerContainer
+              audioEngine={audioEngine}
+              textLayers={textLayers}
+              backgroundConfig={backgroundConfig}
+            />
           </div>
         )}
       </main>
