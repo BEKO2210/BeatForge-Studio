@@ -2,25 +2,11 @@
  * Text Renderer
  *
  * Pure function for rendering TextLayer objects on a canvas context.
- * Handles positioning, styling, stroke, shadow, and animation state.
+ * Handles positioning, styling, stroke, shadow, glow, rotation, and animation state.
  */
 
 import type { TextLayer } from './types';
-
-/**
- * Animation state computed by animation utilities.
- * Applied during text rendering for dynamic effects.
- */
-export interface TextAnimationState {
-  /** Opacity multiplier (0-1) */
-  opacity: number;
-  /** Horizontal offset in pixels */
-  offsetX: number;
-  /** Vertical offset in pixels */
-  offsetY: number;
-  /** Scale multiplier (1 = normal size) */
-  scale: number;
-}
+import type { TextAnimationState } from './animations';
 
 /**
  * Default animation state (fully visible, no transforms)
@@ -30,14 +16,17 @@ const DEFAULT_ANIMATION_STATE: TextAnimationState = {
   offsetX: 0,
   offsetY: 0,
   scale: 1,
+  rotation: 0,
+  glowBlur: 0,
+  glowColor: 'rgba(255, 255, 255, 0)',
 };
 
 /**
  * Renders a text layer on the canvas.
  *
  * Converts normalized (0-1) coordinates to pixel positions,
- * applies styling (font, color, stroke, shadow), and handles
- * animation state transforms (opacity, offset, scale).
+ * applies styling (font, color, stroke, shadow, glow), and handles
+ * animation state transforms (opacity, offset, scale, rotation).
  *
  * @param ctx - Canvas 2D rendering context
  * @param layer - Text layer to render
@@ -56,7 +45,7 @@ export function renderTextLayer(
   if (!layer.visible) return;
 
   const { content, position, style } = layer;
-  const { opacity, offsetX, offsetY, scale } = animationState;
+  const { opacity, offsetX, offsetY, scale, rotation, glowBlur, glowColor } = animationState;
 
   // Skip fully transparent layers
   if (opacity <= 0) return;
@@ -75,12 +64,20 @@ export function renderTextLayer(
   // Apply opacity
   ctx.globalAlpha = opacity;
 
-  // Apply scale transform around text position
-  if (scale !== 1) {
-    ctx.translate(x, y);
-    ctx.scale(scale, scale);
-    ctx.translate(-x, -y);
+  // Apply transforms (translate to position, rotate, scale)
+  ctx.translate(x, y);
+
+  if (rotation !== 0) {
+    ctx.rotate(rotation);
   }
+
+  if (scale !== 1) {
+    ctx.scale(scale, scale);
+  }
+
+  // Reset position for drawing (we've already translated)
+  const drawX = 0;
+  const drawY = 0;
 
   // Set font properties
   const fontWeight = typeof style.fontWeight === 'number'
@@ -92,8 +89,15 @@ export function renderTextLayer(
   ctx.textAlign = position.anchor;
   ctx.textBaseline = 'middle';
 
-  // Apply shadow if configured
-  if (style.shadow) {
+  // Apply glow effect (rendered as shadow with no offset)
+  if (glowBlur > 0) {
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = glowBlur;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+  }
+  // Apply shadow if configured (in addition to glow)
+  else if (style.shadow) {
     ctx.shadowColor = style.shadow.color;
     ctx.shadowBlur = style.shadow.blur;
     ctx.shadowOffsetX = style.shadow.offsetX;
@@ -105,12 +109,18 @@ export function renderTextLayer(
     ctx.strokeStyle = style.strokeColor;
     ctx.lineWidth = style.strokeWidth;
     ctx.lineJoin = 'round';
-    ctx.strokeText(content, x, y);
+    ctx.strokeText(content, drawX, drawY);
   }
 
   // Draw fill text
   ctx.fillStyle = style.color;
-  ctx.fillText(content, x, y);
+  ctx.fillText(content, drawX, drawY);
+
+  // If we have both glow and want stroke to glow too, draw again without glow
+  if (glowBlur > 0 && style.strokeColor && style.strokeWidth) {
+    // Draw stroke again with glow
+    ctx.strokeText(content, drawX, drawY);
+  }
 
   // Restore context state
   ctx.restore();

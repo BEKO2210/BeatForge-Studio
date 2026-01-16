@@ -2,8 +2,11 @@ import { useEffect, useRef } from 'react';
 import type { Renderer } from '../renderer/Renderer';
 import type { TextLayer } from './types';
 import { renderTextLayer } from './TextRenderer';
-import { calculateTextAnimation } from './animations';
+import { calculateTextAnimation, applyBeatEffects, type TextAnimationState } from './animations';
 import { useBeatReaction } from '../hooks/useBeatReaction';
+
+/** Beat-reactive animation types that use beat data directly */
+const BEAT_ANIMATIONS = new Set(['pulse', 'shake', 'wobble', 'glow']);
 
 /**
  * Props for TextLayerRenderer component
@@ -38,10 +41,11 @@ export function TextLayerRenderer({
   width,
   height,
 }: TextLayerRendererProps): null {
-  // Smooth beat reaction for pulse animation
+  // Smooth beat reaction with fast decay for punchy effects
+  // Increased sensitivity for more visible reactions
   const reaction = useBeatReaction(isBeat, beatIntensity, {
-    decayMs: 150,
-    threshold: 0.1,
+    decayMs: 150, // Slightly longer decay for smoother animation
+    threshold: 0.03, // Lower threshold to catch more beats
   });
 
   // Store current values in refs for render callback
@@ -67,30 +71,59 @@ export function TextLayerRenderer({
       const w = widthRef.current;
       const h = heightRef.current;
       const beatReaction = reactionValueRef.current;
+      const now = Date.now();
 
       // Render each visible layer
       for (const layer of currentLayers) {
         if (!layer.visible) continue;
 
+        // Calculate time since layer was created (in milliseconds)
+        const timeSinceCreation = now - layer.createdAt;
+
+        // Get beat effect settings
+        const settings = layer.beatEffects;
+
         // Calculate animation state
-        // Progress is 1 (fully visible) for now - timing will be added in effects phase
-        const progress = 1;
+        let animationState: TextAnimationState;
 
-        // Use beat reaction value for pulse animation or beat-reactive layers
-        const effectiveBeatReaction = layer.beatReactive ? beatReaction : 0;
+        if (BEAT_ANIMATIONS.has(layer.animation)) {
+          // Beat-reactive animations: pass beat reaction directly
+          animationState = calculateTextAnimation(
+            layer.animation,
+            timeSinceCreation,
+            beatReaction,
+            settings,
+            now
+          );
+        } else {
+          // Non-beat animations: pass beat only if beatReactive is enabled
+          const beatValue = layer.beatReactive ? beatReaction : 0;
+          animationState = calculateTextAnimation(
+            layer.animation,
+            timeSinceCreation,
+            beatValue,
+            settings,
+            now
+          );
 
-        const animationState = calculateTextAnimation(
-          layer.animation,
-          progress,
-          effectiveBeatReaction
-        );
+          // If beatReactive is enabled and beat is active, apply additional effects
+          if (layer.beatReactive && beatReaction > 0.01) {
+            animationState = applyBeatEffects(
+              animationState,
+              beatReaction,
+              settings,
+              now
+            );
+          }
+        }
 
         // Render the text layer
         renderTextLayer(ctx, layer, w, h, animationState);
       }
     };
 
-    const unsubscribe = renderer.onRender(renderCallback);
+    // Register with 'text' layer to always render on top
+    const unsubscribe = renderer.onRender(renderCallback, 'text');
     return unsubscribe;
   }, [renderer]);
 

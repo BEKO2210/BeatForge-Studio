@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import type { TextLayer, TextAnimation, TextPosition } from '../text/types';
+import type { TextLayer, TextAnimation, TextPosition, BeatEffectSettings } from '../text/types';
+import { DEFAULT_BEAT_EFFECTS } from '../text/types';
 
 /**
  * Props for TextEditor component
@@ -22,16 +23,22 @@ const FONT_FAMILIES = [
   'Impact, sans-serif',
 ];
 
-/** Available animation types */
-const ANIMATION_OPTIONS: { value: TextAnimation; label: string }[] = [
-  { value: 'none', label: 'None' },
-  { value: 'fade', label: 'Fade' },
-  { value: 'slide-up', label: 'Slide Up' },
-  { value: 'slide-down', label: 'Slide Down' },
-  { value: 'slide-left', label: 'Slide Left' },
-  { value: 'slide-right', label: 'Slide Right' },
-  { value: 'scale', label: 'Scale' },
-  { value: 'pulse', label: 'Pulse' },
+/** Available animation types grouped by category */
+const ANIMATION_OPTIONS: { value: TextAnimation; label: string; group: string }[] = [
+  // Basic
+  { value: 'none', label: 'None', group: 'Basic' },
+  { value: 'fade', label: 'Fade In', group: 'Basic' },
+  { value: 'scale', label: 'Scale In', group: 'Basic' },
+  // Slides
+  { value: 'slide-up', label: 'Slide Up', group: 'Slide' },
+  { value: 'slide-down', label: 'Slide Down', group: 'Slide' },
+  { value: 'slide-left', label: 'Slide Left', group: 'Slide' },
+  { value: 'slide-right', label: 'Slide Right', group: 'Slide' },
+  // Beat Effects
+  { value: 'pulse', label: 'Pulse', group: 'Beat' },
+  { value: 'shake', label: 'Shake', group: 'Beat' },
+  { value: 'wobble', label: 'Wobble', group: 'Beat' },
+  { value: 'glow', label: 'Glow', group: 'Beat' },
 ];
 
 /** Available anchor options */
@@ -45,7 +52,7 @@ const ANCHOR_OPTIONS: { value: TextPosition['anchor']; label: string }[] = [
  * TextEditor - UI for managing text layers
  *
  * Allows users to add, edit, and remove text layers with full control
- * over content, position, styling, and animations.
+ * over content, position, styling, animations, and beat effects.
  */
 export function TextEditor({
   layers,
@@ -62,13 +69,15 @@ export function TextEditor({
       position: { x: 0.5, y: 0.5, anchor: 'center' },
       style: {
         fontFamily: 'Inter, system-ui, sans-serif',
-        fontSize: 32,
+        fontSize: 48,
         fontWeight: 'bold',
         color: '#ffffff',
       },
-      animation: 'none',
-      beatReactive: false,
+      animation: 'pulse', // Default to a beat-reactive animation
+      beatReactive: true,
       visible: true,
+      createdAt: Date.now(),
+      beatEffects: { ...DEFAULT_BEAT_EFFECTS },
     };
 
     onLayersChange([...layers, newLayer]);
@@ -99,6 +108,19 @@ export function TextEditor({
     [layers, onLayersChange]
   );
 
+  const handleUpdateBeatEffects = useCallback(
+    (id: string, updates: Partial<BeatEffectSettings>) => {
+      onLayersChange(
+        layers.map((layer) =>
+          layer.id === id
+            ? { ...layer, beatEffects: { ...layer.beatEffects, ...updates } }
+            : layer
+        )
+      );
+    },
+    [layers, onLayersChange]
+  );
+
   const toggleExpanded = useCallback((id: string) => {
     setExpandedLayers((prev) => {
       const next = new Set(prev);
@@ -110,6 +132,18 @@ export function TextEditor({
       return next;
     });
   }, []);
+
+  // Check if animation is beat-reactive
+  const isBeatAnimation = (anim: TextAnimation) =>
+    ['pulse', 'shake', 'wobble', 'glow'].includes(anim);
+
+  // Replay intro animation by resetting createdAt
+  const handleReplayIntro = useCallback(
+    (id: string) => {
+      handleUpdateLayer(id, { createdAt: Date.now() });
+    },
+    [handleUpdateLayer]
+  );
 
   return (
     <div className={`text-editor ${disabled ? 'text-editor--disabled' : ''}`}>
@@ -131,6 +165,7 @@ export function TextEditor({
       <div className="text-editor-layers">
         {layers.map((layer, index) => {
           const isExpanded = expandedLayers.has(layer.id);
+          const showBeatControls = isBeatAnimation(layer.animation) || layer.beatReactive;
 
           return (
             <div key={layer.id} className="text-editor-layer">
@@ -284,7 +319,7 @@ export function TextEditor({
                         <input
                           type="range"
                           min="12"
-                          max="120"
+                          max="150"
                           step="1"
                           value={layer.style.fontSize}
                           onChange={(e) =>
@@ -354,7 +389,7 @@ export function TextEditor({
                   <div className="text-editor-section">
                     <h4>Animation</h4>
                     <div className="text-editor-field">
-                      <label>Type</label>
+                      <label>Effect Type</label>
                       <select
                         value={layer.animation}
                         onChange={(e) =>
@@ -364,29 +399,135 @@ export function TextEditor({
                         }
                         disabled={disabled}
                       >
-                        {ANIMATION_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
+                        <optgroup label="Intro (one-time)">
+                          {ANIMATION_OPTIONS.filter(o => o.group === 'Basic').map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Slide In">
+                          {ANIMATION_OPTIONS.filter(o => o.group === 'Slide').map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Beat Reactive">
+                          {ANIMATION_OPTIONS.filter(o => o.group === 'Beat').map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </optgroup>
                       </select>
                     </div>
-                    <div className="text-editor-field">
-                      <label className="text-editor-checkbox-label">
+                    {layer.animation !== 'none' && (
+                      <button
+                        className="text-editor-replay-btn"
+                        onClick={() => handleReplayIntro(layer.id)}
+                        disabled={disabled}
+                      >
+                        Replay Intro Animation
+                      </button>
+                    )}
+                    {!isBeatAnimation(layer.animation) && (
+                      <div className="text-editor-field">
+                        <label className="text-editor-checkbox-label">
+                          <input
+                            type="checkbox"
+                            checked={layer.beatReactive}
+                            onChange={(e) =>
+                              handleUpdateLayer(layer.id, {
+                                beatReactive: e.target.checked,
+                              })
+                            }
+                            disabled={disabled}
+                          />
+                          Add Beat Effects
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Beat Effect Controls - Show when using beat animations or beatReactive */}
+                  {showBeatControls && (
+                    <div className="text-editor-section">
+                      <h4>Beat Controls</h4>
+                      <div className="text-editor-field">
+                        <label>
+                          Sensitivity ({Math.round(layer.beatEffects.sensitivity * 100)}%)
+                        </label>
                         <input
-                          type="checkbox"
-                          checked={layer.beatReactive}
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.05"
+                          value={layer.beatEffects.sensitivity}
                           onChange={(e) =>
-                            handleUpdateLayer(layer.id, {
-                              beatReactive: e.target.checked,
+                            handleUpdateBeatEffects(layer.id, {
+                              sensitivity: parseFloat(e.target.value),
                             })
                           }
                           disabled={disabled}
                         />
-                        Beat Reactive (pulses with music)
-                      </label>
+                      </div>
+                      <div className="text-editor-field">
+                        <label>
+                          Beat Strength ({Math.round(layer.beatEffects.beatStrength * 100)}%)
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.05"
+                          value={layer.beatEffects.beatStrength}
+                          onChange={(e) =>
+                            handleUpdateBeatEffects(layer.id, {
+                              beatStrength: parseFloat(e.target.value),
+                            })
+                          }
+                          disabled={disabled}
+                        />
+                      </div>
+                      <div className="text-editor-field">
+                        <label>
+                          Shake Intensity ({Math.round(layer.beatEffects.shakeIntensity * 100)}%)
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.05"
+                          value={layer.beatEffects.shakeIntensity}
+                          onChange={(e) =>
+                            handleUpdateBeatEffects(layer.id, {
+                              shakeIntensity: parseFloat(e.target.value),
+                            })
+                          }
+                          disabled={disabled}
+                        />
+                      </div>
+                      <div className="text-editor-field">
+                        <label>
+                          Glow Intensity ({Math.round(layer.beatEffects.glowIntensity * 100)}%)
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.05"
+                          value={layer.beatEffects.glowIntensity}
+                          onChange={(e) =>
+                            handleUpdateBeatEffects(layer.id, {
+                              glowIntensity: parseFloat(e.target.value),
+                            })
+                          }
+                          disabled={disabled}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>

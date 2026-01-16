@@ -2,121 +2,30 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2025-01-15)
+See: .planning/PROJECT.md (updated 2025-01-16)
 
 **Core value:** Beat-reactive visuals that feel tight and alive. If the visuals don't breathe with the music, nothing else matters.
-**Current focus:** Milestone Complete — All 12 phases delivered
+**Current focus:** v0.1 Alpha shipped — planning next milestone
 
 ## Current Position
 
-Phase: 12 of 12 (Platform Polish) — Complete
-Plan: 3 of 3 complete
-Status: All phases complete, milestone ready for completion
-Last activity: 2025-01-16 — Plan 12-03 executed (mobile polish, human verification passed)
+Phase: Complete (v0.1 shipped)
+Plan: N/A
+Status: Milestone complete, ready for next milestone
+Last activity: 2025-01-16 — v0.1 Alpha shipped
 
-Progress: ██████████ 100%
+Progress: Milestone v0.1 complete
 
-## Performance Metrics
+## Milestones
 
-**Velocity:**
-- Total plans completed: 19
-- Average duration: 10 min
-- Total execution time: 3.2 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 01-foundation | 1/1 | 12 min | 12 min |
-| 02-audio-engine | 1/1 | 15 min | 15 min |
-| 03-beat-detection | 2/2 | 18 min | 9 min |
-| 04-canvas-renderer | 1/1 | 8 min | 8 min |
-| 05-visualizers | 3/3 | 43 min | 14 min |
-| 06-beat-reactivity | 2/2 | 20 min | 10 min |
-| 07-text-system | 1/1 | 6 min | 6 min |
-| 08-background-system | 1/1 | 10 min | 10 min |
-| 09-effects | 1/1 | 9 min | 9 min |
-| 10-presets | 1/1 | 12 min | 12 min |
-| 11-export-pipeline | 2/2 | 14 min | 7 min |
-| 12-platform-polish | 3/3 | 25 min | 8.3 min |
-
-**Recent Trend:**
-- Last 5 plans: 12, 8, 6, 7, 10 min
-- Trend: Consistent execution times
+- v0.1 Alpha — SHIPPED 2025-01-16
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- **2025-01-15 (01-01):** Used Vite 7.x with React 19 (latest stable)
-- **2025-01-15 (01-01):** Enabled noUncheckedIndexedAccess for extra type safety
-- **2025-01-15 (01-01):** Configured base path '/Meet-the-Beat-main/' for GitHub Pages
-- **2025-01-15 (02-01):** Lazy AudioContext initialization for browser autoplay policy compliance
-- **2025-01-15 (02-01):** useMemo with key pattern for AudioEngine lifecycle management
-- **2025-01-15 (02-01):** State lifted to App.tsx - AudioPlayer receives all state as props
-- **2025-01-15 (03-01):** AnalyserNode fftSize 2048, smoothingTimeConstant 0.8 for beat detection
-- **2025-01-15 (03-01):** Energy-based beat detection with 1.3x threshold and 100ms cooldown
-- **2025-01-15 (03-01):** Bass frequency (20-250Hz) as primary beat indicator
-- **2025-01-15 (03-02):** Polling via requestAnimationFrame for useBeatDetector - ensures 60 FPS
-- **2025-01-15 (03-02):** Rising edge detection for beat count - prevents double counting
-- **2025-01-15 (04-01):** devicePixelRatio scaling for crisp rendering on high-DPI displays
-- **2025-01-15 (04-01):** Set-based render callbacks allowing multiple visualizers to register
-- **2025-01-15 (04-01):** ResizeObserver on parent element for responsive canvas sizing
-- **2025-01-15 (05-01):** Frequency data normalized 0-1 (divide by 255 from Uint8Array)
-- **2025-01-15 (05-01):** Time domain data normalized -1 to 1 ((value - 128) / 128)
-- **2025-01-15 (05-01):** VisualizerProps interface uses Renderer | null for initialization state
-- **2025-01-15 (05-02):** Visualizer refs updated in useEffect for React 19 compliance
-- **2025-01-15 (05-02):** HSL color wheel for dynamic color generation in visualizers
-- **2025-01-15 (05-02):** Equalizer 64 bars, waveform 400 samples, circular 128 lines
-- **2025-01-15 (05-03):** VisualizerContainer polls audio data via requestAnimationFrame
-- **2025-01-15 (05-03):** State instead of refs for audio data (React 19 lint compliance)
-- **2025-01-15 (05-03):** Equalizer: 80 time columns scrolling spectrogram at 30 fps
-- **2025-01-15 (05-03):** Circular: 0.3 rad/s rotation with 12-frame trail history
-- **2025-01-15 (06-01):** Ref-based animation loop in useBeatReaction to avoid recursive useCallback lint error
-- **2025-01-15 (06-01):** 150ms decay with easeOutExpo for punchy feel with smooth tail
-- **2025-01-15 (06-01):** Beat effects applied to recent 10 columns with gradual falloff
-- **2025-01-15 (06-01):** Canvas shadowBlur for glow effect triggered at reaction > 0.1
-- **2025-01-16 (06-02):** 200ms decay for Waveform (longer for smooth wave feel)
-- **2025-01-16 (06-02):** 180ms decay for Circular (medium for responsive feel)
-- **2025-01-16 (06-02):** Center glow via radial gradient at reaction > 0.15
-- **2025-01-16 (06-02):** Rotation boost via accumulated offset on rising beat edges
-- **2025-01-16 (06-02):** Mirror reflection uses 50% scaled effect for subtlety
-- **2025-01-16 (07-01):** Normalized 0-1 coordinates for responsive text positioning
-- **2025-01-16 (07-01):** Pure renderTextLayer function matching visualizer pattern
-- **2025-01-16 (07-01):** Exhaustive switch in calculateTextAnimation for type safety
-- **2025-01-16 (07-01):** 50px slide distance, 0.1 pulse scale factor for subtle effects
-- **2025-01-16 (08-01):** Background renders at 'background' layer priority 0 (behind everything)
-- **2025-01-16 (08-01):** Linear gradient angle calculation using trigonometry for full diagonal coverage
-- **2025-01-16 (08-01):** Image backgrounds use FileReader for data URL conversion
-- **2025-01-16 (08-01):** Gradient supports 2-4 color stops with position sliders
-- **2025-01-16 (09-01):** CSS transform for camera shake (simpler than canvas translate)
-- **2025-01-16 (09-01):** Vignette at overlay layer priority 20 (after visualizers, before text)
-- **2025-01-16 (09-01):** 0.6 intensity threshold for camera shake (only strong beats)
-- **2025-01-16 (09-01):** 100ms decay for camera shake (snappier than visualizers)
-- **2025-01-16 (09-01):** 8px max offset, 35% vignette intensity (subtle but cinematic)
-- **2025-01-16 (10-01):** PresetConfig composes existing types (background, text, visualizer, effects)
-- **2025-01-16 (10-01):** YouTube preset as default (most common use case, 16:9 aspect ratio)
-- **2025-01-16 (10-01):** Aspect ratio via CSS property on canvas wrapper
-- **2025-01-16 (10-01):** VisualizerContainer accepts optional preset props, falls back to local state
-- **2025-01-16 (11-01):** VP9/Opus codec fallback chain for browser compatibility
-- **2025-01-16 (11-01):** 5 Mbps video bitrate for quality balance
-- **2025-01-16 (11-01):** 100ms MediaRecorder chunk intervals for smooth progress
-- **2025-01-16 (11-01):** Parallel audio routing - speakers + capture simultaneously
-- **2025-01-16 (11-02):** onCanvasReady callback pattern for canvas access (simpler than forwardRef)
-- **2025-01-16 (11-02):** ExportPanel positioned between BackgroundEditor and VisualizerContainer
-- **2025-01-16 (11-02):** Green gradient for export button, red for cancel - clear visual distinction
-- **2025-01-16 (12-01):** generateSW mode over injectManifest for PWA simplicity
-- **2025-01-16 (12-01):** SVG icons for modern browser compatibility (scalable, single file)
-- **2025-01-16 (12-01):** autoUpdate registration for seamless service worker updates
-- **2025-01-16 (12-02):** React context for tier state (no persistence/payment)
-- **2025-01-16 (12-02):** Watermark in canvas wrapper (bottom-right, semi-transparent)
-- **2025-01-16 (12-02):** Free tier: 720p limit, Pro tier: 1080p unlock
-- **2025-01-16 (12-03):** 44px minimum touch targets for accessibility
-- **2025-01-16 (12-03):** @media (pointer: coarse) for touch-specific styles
-- **2025-01-16 (12-03):** viewport-fit=cover + env(safe-area-inset-*) for notched devices
+All key decisions validated as "Good" during v0.1 development.
 
 ### Pending Todos
 
@@ -129,6 +38,16 @@ None yet.
 ## Session Continuity
 
 Last session: 2025-01-16
-Stopped at: Plan 12-03 complete - All phases delivered, milestone complete
+Stopped at: v0.1 milestone complete
 Resume file: None
-Next: `/gsd:complete-milestone` to archive and celebrate
+Next: `/gsd:discuss-milestone` to plan next milestone
+
+---
+
+## Next Milestone Flow
+
+1. `/gsd:discuss-milestone` — thinking partner, creates context file
+2. `/gsd:new-milestone` — update PROJECT.md with new goals
+3. `/gsd:research-project` — (optional) research ecosystem
+4. `/gsd:define-requirements` — scope what to build
+5. `/gsd:create-roadmap` — plan how to build it

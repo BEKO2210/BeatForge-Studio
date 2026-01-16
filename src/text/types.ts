@@ -73,7 +73,38 @@ export type TextAnimation =
   | 'slide-left'
   | 'slide-right'
   | 'scale'
-  | 'pulse';
+  | 'pulse'
+  | 'shake'
+  | 'wobble'
+  | 'glow';
+
+/**
+ * Beat effect settings for fine-tuned control
+ * All values 0-1 range
+ */
+export interface BeatEffectSettings {
+  /** How sensitive to beat detection (0 = ignore beats, 1 = react to everything) */
+  sensitivity: number;
+  /** Strength of beat effects (0 = subtle, 1 = extreme) */
+  beatStrength: number;
+  /** Smoothness of transitions (0 = instant, 1 = very smooth) */
+  smoothness: number;
+  /** Intensity of shake/wobble effects (0 = none, 1 = maximum) */
+  shakeIntensity: number;
+  /** Glow intensity on beat (0 = none, 1 = maximum) */
+  glowIntensity: number;
+}
+
+/**
+ * Default beat effect settings - tuned for VISIBILITY
+ */
+export const DEFAULT_BEAT_EFFECTS: BeatEffectSettings = {
+  sensitivity: 0.7,    // High sensitivity to catch beats
+  beatStrength: 0.7,   // Strong beat response
+  smoothness: 0.5,     // Balanced smoothness
+  shakeIntensity: 0.6, // Visible shake
+  glowIntensity: 0.7,  // Strong glow
+};
 
 /**
  * A text layer representing a single text element on the canvas.
@@ -94,4 +125,8 @@ export interface TextLayer {
   beatReactive: boolean;
   /** Whether this layer is currently visible */
   visible: boolean;
+  /** Timestamp when layer was created (for intro animation timing) */
+  createdAt: number;
+  /** Beat effect settings for fine-tuned control */
+  beatEffects: BeatEffectSettings;
 }

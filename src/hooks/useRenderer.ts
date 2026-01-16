@@ -32,21 +32,19 @@ export function useRenderer(
     rendererInstance.start();
     setIsRunning(true);
 
-    // Set up ResizeObserver on canvas parent for responsive sizing
-    const parent = canvas.parentElement;
-    if (parent) {
-      resizeObserverRef.current = new ResizeObserver((entries) => {
-        const entry = entries[0];
-        if (entry) {
-          const { width } = entry.contentRect;
-          // Maintain aspect ratio or use fixed height
-          const height = config.height ?? 400;
-          rendererInstance.resize(width, height);
-        }
-      });
+    // Set up ResizeObserver on canvas for responsive sizing
+    // Observe the canvas itself to get accurate dimensions including aspect-ratio
+    resizeObserverRef.current = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        const { width, height } = entry.contentRect;
+        // Use actual element dimensions (respects CSS aspect-ratio)
+        const actualHeight = config.height ?? height;
+        rendererInstance.resize(width, actualHeight > 0 ? actualHeight : 300);
+      }
+    });
 
-      resizeObserverRef.current.observe(parent);
-    }
+    resizeObserverRef.current.observe(canvas);
 
     // Cleanup on unmount
     return () => {

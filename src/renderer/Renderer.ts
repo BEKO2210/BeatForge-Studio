@@ -1,5 +1,20 @@
 import type { RendererConfig, RenderCallback, RendererState } from './types';
 
+/** Render layer priority - higher numbers render on top */
+export type RenderLayer = 'background' | 'visualizer' | 'overlay' | 'text';
+
+const LAYER_PRIORITY: Record<RenderLayer, number> = {
+  background: 0,
+  visualizer: 10,
+  overlay: 20,
+  text: 100, // Text always on top
+};
+
+interface LayeredCallback {
+  callback: RenderCallback;
+  priority: number;
+}
+
 /**
  * Canvas 2D Renderer with 60 FPS render loop
  *
@@ -8,11 +23,12 @@ import type { RendererConfig, RenderCallback, RendererState } from './types';
  * - requestAnimationFrame-based render loop with deltaTime
  * - Multiple render callbacks (for layered visualizers)
  * - Responsive resize support
+ * - Layer priority for render order (text always on top)
  */
 export class Renderer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private renderCallbacks: Set<RenderCallback> = new Set();
+  private renderCallbacks: Map<RenderCallback, LayeredCallback> = new Map();
   private animationFrameId: number | null = null;
   private lastFrameTime: number = 0;
   private _state: RendererState = 'idle';
@@ -70,8 +86,11 @@ export class Renderer {
     this.ctx.fillStyle = this.backgroundColor;
     this.ctx.fillRect(0, 0, this._width, this._height);
 
-    // Call all registered render callbacks
-    for (const callback of this.renderCallbacks) {
+    // Sort callbacks by priority and call them (lower priority first)
+    const sortedCallbacks = [...this.renderCallbacks.values()]
+      .sort((a, b) => a.priority - b.priority);
+
+    for (const { callback } of sortedCallbacks) {
       this.ctx.save();
       callback(this.ctx, deltaTime);
       this.ctx.restore();
@@ -119,11 +138,14 @@ export class Renderer {
   }
 
   /**
-   * Register a render callback
+   * Register a render callback with optional layer priority
+   * @param callback - The render function to call each frame
+   * @param layer - Render layer (default: 'visualizer'). Text layer renders on top.
    * @returns Unsubscribe function
    */
-  onRender(callback: RenderCallback): () => void {
-    this.renderCallbacks.add(callback);
+  onRender(callback: RenderCallback, layer: RenderLayer = 'visualizer'): () => void {
+    const priority = LAYER_PRIORITY[layer];
+    this.renderCallbacks.set(callback, { callback, priority });
     return () => {
       this.renderCallbacks.delete(callback);
     };

@@ -12,28 +12,23 @@ Beat-reactive visuals that feel tight and alive. If the visuals don't breathe wi
 
 ### Validated
 
-(None yet — ship to validate)
+- Audio upload and analysis (MP3/WAV via Web Audio API) — v0.1
+- Real-time beat detection and frequency analysis — v0.1
+- Audio visualizers (equalizer bars, waveforms, circular spectrum) — v0.1
+- Animated text layers (lyrics, quotes, captions) — v0.1
+- Background system (solid colors, gradients, images) — v0.1
+- Beat-reactive animations across all visual elements — v0.1
+- Camera shake and vignette effects — v0.1
+- Preset system with 4 distinct styles (TikTok, YouTube, Lyric Video, Club) — v0.1
+- Real-time preview (WYSIWYG) at 60 FPS — v0.1
+- Video export (WebM format, 720p/1080p) — v0.1
+- Responsive UI (desktop and mobile) — v0.1
+- Offline capability after first load (PWA) — v0.1
+- Monetization structure (Free: watermark + 720p / Pro: no watermark + 1080p) — v0.1
 
 ### Active
 
-- [ ] Audio upload and analysis (MP3/WAV via Web Audio API)
-- [ ] Real-time beat detection and frequency analysis
-- [ ] Audio visualizers (equalizer bars, waveforms, circular spectrum)
-- [ ] Animated text layers (lyrics, quotes, captions)
-- [ ] Background system (solid colors, gradients, images, video)
-- [ ] Particle effects and motion graphics
-- [ ] Beat-reactive animations across all visual elements
-- [ ] Camera shake and cinematic post-processing effects
-- [ ] Preset system with 4 distinct styles:
-  - **TikTok** (9:16): High energy, strong beat reactions, bold centered text, constant movement
-  - **YouTube** (16:9): Cinematic, calm transitions, atmosphere-focused, minimal text
-  - **Lyric Video**: Text-centric, karaoke-style animation, soft background visualizers, readability priority
-  - **Club Visualizer**: Dark background, neon colors, strong equalizer & particles, pulsing to beat, rave aesthetic
-- [ ] Real-time preview (WYSIWYG)
-- [ ] Video export (WebM, MP4 if feasible)
-- [ ] Responsive UI (desktop and mobile)
-- [ ] Offline capability after first load
-- [ ] Monetization structure (Free: watermark + limited export / Pro: no watermark + HD)
+(None currently — v0.1 shipped, planning next milestone)
 
 ### Out of Scope
 
@@ -44,16 +39,21 @@ Beat-reactive visuals that feel tight and alive. If the visuals don't breathe wi
 - Collaborative editing or sharing inside the app — Solo creator tool
 - Complex keyframe animation editor — Smart presets + live controls instead
 - Marketplace or preset store — Not in v1
+- Video backgrounds — Deferred (added complexity)
+- Particle effects — Deferred (performance concerns, reverted in v0.1)
+- MP4 export — Browser support limited, WebM works well
 
 ## Context
+
+**Current state:** v0.1 Alpha shipped with 6,969 LOC TypeScript, 50 source files.
 
 **Target users:** Content creators making music videos for TikTok, YouTube, Instagram. Music producers wanting visualizers. Anyone who wants to turn audio into shareable video without learning After Effects.
 
 **Technical environment:**
-- Modern browsers with Web Audio API and Canvas/WebGL support
-- Must deploy to GitHub Pages (static hosting, no server)
-- Performance-critical: 60 FPS rendering, no memory leaks
-- Export via browser-native APIs (MediaRecorder, WebCodecs if available)
+- Modern browsers with Web Audio API and Canvas support
+- Deployed to GitHub Pages (static hosting, no server)
+- Performance-critical: Achieved 60 FPS rendering
+- Export via MediaRecorder API (WebM with VP9/Opus)
 
 **Preset philosophy:**
 Each preset is a complete visual language, not just settings. They differ in:
@@ -65,20 +65,25 @@ Each preset is a complete visual language, not just settings. They differ in:
 
 ## Constraints
 
-- **Tech stack**: Vite + React + TypeScript — modern, fast, maintainable
-- **Rendering**: Canvas 2D or WebGL — browser-native, no plugins
-- **Audio**: Web Audio API — real-time frequency/beat analysis
-- **Deployment**: GitHub Pages compatible — static files only, no server
-- **Performance**: 60 FPS target, must not leak memory on long sessions
-- **Offline**: Service worker for offline capability after initial load
+- **Tech stack**: Vite 7.x + React 19 + TypeScript (strict mode)
+- **Rendering**: Canvas 2D with devicePixelRatio scaling
+- **Audio**: Web Audio API with AnalyserNode (fftSize 2048)
+- **Deployment**: GitHub Pages at /Meet-the-Beat-main/ base path
+- **Performance**: 60 FPS achieved, memory stable
+- **Offline**: Workbox PWA with generateSW mode
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| 100% client-side architecture | No server costs, instant deployment, user privacy | — Pending |
-| Preset-based UX over timeline editing | Lower complexity, faster creation, focused scope | — Pending |
-| Beat-reactive as core differentiator | This is what makes visualizers feel alive vs static | — Pending |
+| 100% client-side architecture | No server costs, instant deployment, user privacy | Good |
+| Preset-based UX over timeline editing | Lower complexity, faster creation, focused scope | Good |
+| Beat-reactive as core differentiator | This is what makes visualizers feel alive vs static | Good |
+| Canvas 2D over WebGL | Simpler implementation, sufficient for current visualizers | Good |
+| Callback-based canvas access | Simpler than forwardRef for export integration | Good |
+| Energy-based beat detection | 1.3x threshold + 100ms cooldown feels tight | Good |
+| CSS aspect ratio for presets | Simpler than canvas dimension recalculation | Good |
+| Reverted particle system | Performance concerns, visual clutter | Good |
 
 ---
-*Last updated: 2025-01-15 after initialization*
+*Last updated: 2025-01-16 after v0.1 milestone*

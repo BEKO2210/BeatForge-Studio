@@ -42,13 +42,25 @@ export function WaveformVisualizer({
       const reactionValue = reactionValueRef.current;
 
       const centerY = h / 2;
-      const baseAmplitude = h * 0.4; // Wave uses 80% of height total
+      const baseAmplitude = h * 0.45; // Wave uses 90% of height total
       const sampleCount = Math.min(400, data.length);
       const step = Math.floor(data.length / sampleCount);
 
-      // Beat-reactive amplitude: up to 25% taller on strong beat
-      const amplitudeBoost = 1 + reactionValue * 0.25;
+      // Beat-reactive amplitude: up to 15% taller on strong beat
+      const amplitudeBoost = 1 + reactionValue * 0.15;
       const amplitude = baseAmplitude * amplitudeBoost;
+
+      // Draw background waveform grid for "alive" feel
+      ctx.strokeStyle = `rgba(0, 255, 136, ${0.05 + reactionValue * 0.05})`;
+      ctx.lineWidth = 1;
+      const gridLines = 6;
+      for (let g = 1; g < gridLines; g++) {
+        const gy = (h / gridLines) * g;
+        ctx.beginPath();
+        ctx.moveTo(0, gy);
+        ctx.lineTo(w, gy);
+        ctx.stroke();
+      }
 
       // Beat-reactive line width: 2.5 → 4.5 on beat
       const lineWidth = 2.5 + reactionValue * 2;
