@@ -41,6 +41,8 @@ interface VisualizerContainerProps {
   onCircularSettingsChange?: (settings: CircularSettings) => void;
   /** Callback when club settings change */
   onClubSettingsChange?: (settings: ClubSettings) => void;
+  /** Callback to expose canvas element for export */
+  onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
 }
 
 /**
@@ -60,6 +62,7 @@ export function VisualizerContainer({
   onVisualizerChange,
   onCircularSettingsChange,
   onClubSettingsChange,
+  onCanvasReady,
 }: VisualizerContainerProps) {
   // Use preset-controlled values if provided, otherwise use local state
   const [localSelectedVisualizer, setLocalSelectedVisualizer] = useState<VisualizerType>('equalizer');
@@ -130,6 +133,14 @@ export function VisualizerContainer({
   // Canvas and renderer - height is controlled by CSS aspect-ratio
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { renderer } = useRenderer(canvasRef);
+
+  // Expose canvas element to parent for export functionality
+  useEffect(() => {
+    onCanvasReady?.(canvasRef.current);
+    return () => {
+      onCanvasReady?.(null);
+    };
+  }, [onCanvasReady]);
 
   // Beat detection for isBeat and intensity
   const { beatInfo } = useBeatDetector(audioEngine);
