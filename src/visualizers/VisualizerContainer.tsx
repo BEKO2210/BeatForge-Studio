@@ -10,7 +10,7 @@ import { CircularSpectrumVisualizer } from './CircularSpectrumVisualizer';
 import { TextLayerRenderer, type TextLayer } from '../text';
 import { BackgroundRenderer, type BackgroundConfig } from '../background';
 import { DEFAULT_BACKGROUND } from '../background';
-import { renderVignette } from '../effects';
+import { renderVignette, ParticleRenderer } from '../effects';
 import type { VisualizerType, CircularSettings, ClubSettings } from './types';
 import { DEFAULT_CIRCULAR_SETTINGS, DEFAULT_CLUB_SETTINGS } from './types';
 
@@ -43,6 +43,7 @@ export function VisualizerContainer({
   });
   const [showSettings, setShowSettings] = useState(false);
   const [effectsEnabled, setEffectsEnabled] = useState(true);
+  const [particlesEnabled, setParticlesEnabled] = useState(true);
 
   // Visualizer-specific settings
   const [circularSettings, setCircularSettings] = useState<CircularSettings>(DEFAULT_CIRCULAR_SETTINGS);
@@ -196,6 +197,13 @@ export function VisualizerContainer({
           title="Toggle Effects (Camera Shake + Vignette)"
         >
           FX
+        </button>
+        <button
+          className={`visualizer-selector-btn visualizer-particles-btn ${particlesEnabled ? 'active' : ''}`}
+          onClick={() => setParticlesEnabled(!particlesEnabled)}
+          title="Toggle Particles"
+        >
+          Particles
         </button>
       </div>
 
@@ -351,6 +359,16 @@ export function VisualizerContainer({
       {selectedVisualizer === 'equalizer-v2' && <EqualizerV2Visualizer {...visualizerProps} />}
       {selectedVisualizer === 'waveform' && <WaveformVisualizer {...visualizerProps} />}
       {selectedVisualizer === 'circular' && <CircularSpectrumVisualizer {...visualizerProps} />}
+
+      {/* Render particles (overlay layer, before vignette) */}
+      <ParticleRenderer
+        renderer={renderer}
+        isBeat={beatInfo?.isBeat ?? false}
+        beatIntensity={beatInfo?.intensity ?? 0}
+        width={renderer?.width ?? 800}
+        height={renderer?.height ?? 400}
+        enabled={particlesEnabled}
+      />
 
       {/* Render text layers on top of visualizers */}
       <TextLayerRenderer
