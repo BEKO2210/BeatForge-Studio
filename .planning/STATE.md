@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-15)
 
 **Core value:** Beat-reactive visuals that feel tight and alive. If the visuals don't breathe with the music, nothing else matters.
-**Current focus:** Phase 12 (Platform Polish) — PWA complete, responsive UI next
+**Current focus:** Phase 12 (Platform Polish) — PWA + tier system complete
 
 ## Current Position
 
 Phase: 12 of 12 (Platform Polish) — In Progress
-Plan: 1 of 3 complete
-Status: PWA setup complete (offline support, installability)
-Last activity: 2025-01-16 — Plan 12-01 executed (PWA plugin, manifest, icons)
+Plan: 2 of 3 complete
+Status: Tier system complete (watermark, export limits)
+Last activity: 2025-01-16 — Plan 12-02 executed (tier context, watermark, resolution limits)
 
-Progress: █████████░ 92%
+Progress: █████████░ 95%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
+- Total plans completed: 18
 - Average duration: 10 min
-- Total execution time: 2.9 hours
+- Total execution time: 3.1 hours
 
 **By Phase:**
 
@@ -38,10 +38,10 @@ Progress: █████████░ 92%
 | 09-effects | 1/1 | 9 min | 9 min |
 | 10-presets | 1/1 | 12 min | 12 min |
 | 11-export-pipeline | 2/2 | 14 min | 7 min |
-| 12-platform-polish | 1/3 | 7 min | 7 min |
+| 12-platform-polish | 2/3 | 17 min | 8.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 9, 12, 8, 6, 7 min
+- Last 5 plans: 12, 8, 6, 7, 10 min
 - Trend: Consistent execution times
 
 ## Accumulated Context
@@ -111,6 +111,9 @@ Recent decisions affecting current work:
 - **2025-01-16 (12-01):** generateSW mode over injectManifest for PWA simplicity
 - **2025-01-16 (12-01):** SVG icons for modern browser compatibility (scalable, single file)
 - **2025-01-16 (12-01):** autoUpdate registration for seamless service worker updates
+- **2025-01-16 (12-02):** React context for tier state (no persistence/payment)
+- **2025-01-16 (12-02):** Watermark in canvas wrapper (bottom-right, semi-transparent)
+- **2025-01-16 (12-02):** Free tier: 720p limit, Pro tier: 1080p unlock
 
 ### Pending Todos
 
@@ -123,6 +126,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2025-01-16
-Stopped at: Plan 12-01 complete - PWA setup with service worker
+Stopped at: Plan 12-02 complete - Tier system with watermark and export limits
 Resume file: None
-Next: Plan 12-02 (Responsive UI) or continue to 12-03 (Watermark/Pricing)
+Next: Plan 12-03 (final plan) or phase complete verification
