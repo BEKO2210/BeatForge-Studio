@@ -6,8 +6,18 @@ import { AudioPlayer } from './components/AudioPlayer';
 import { TextEditor } from './components/TextEditor';
 import { BackgroundEditor } from './components/BackgroundEditor';
 import { VisualizerContainer } from './visualizers';
+import type { VisualizerType, CircularSettings, ClubSettings } from './visualizers/types';
 import type { TextLayer } from './text';
-import { DEFAULT_BACKGROUND, type BackgroundConfig } from './background';
+import type { BackgroundConfig } from './background';
+import type { EffectsConfig } from './effects';
+import {
+  PRESET_LIST,
+  PRESETS,
+  DEFAULT_PRESET_ID,
+  DEFAULT_PRESET,
+  type PresetId,
+  type PresetConfig,
+} from './presets';
 import './App.css';
 
 function App() {
@@ -17,8 +27,29 @@ function App() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [engineKey, setEngineKey] = useState(0);
-  const [textLayers, setTextLayers] = useState<TextLayer[]>([]);
-  const [backgroundConfig, setBackgroundConfig] = useState<BackgroundConfig>(DEFAULT_BACKGROUND);
+
+  // Preset state
+  const [currentPresetId, setCurrentPresetId] = useState<PresetId>(DEFAULT_PRESET_ID);
+  const currentPreset = PRESETS[currentPresetId];
+
+  // Derived state from preset (can be customized by user)
+  const [textLayers, setTextLayers] = useState<TextLayer[]>(DEFAULT_PRESET.defaultTextLayers);
+  const [backgroundConfig, setBackgroundConfig] = useState<BackgroundConfig>(DEFAULT_PRESET.background);
+  const [visualizerType, setVisualizerType] = useState<VisualizerType>(DEFAULT_PRESET.visualizer.type);
+  const [circularSettings, setCircularSettings] = useState<CircularSettings | undefined>(DEFAULT_PRESET.visualizer.circularSettings);
+  const [clubSettings, setClubSettings] = useState<ClubSettings | undefined>(DEFAULT_PRESET.visualizer.clubSettings);
+  const [effectsConfig, setEffectsConfig] = useState<EffectsConfig>(DEFAULT_PRESET.effects);
+
+  // Apply preset
+  const applyPreset = useCallback((preset: PresetConfig) => {
+    setCurrentPresetId(preset.id);
+    setTextLayers(preset.defaultTextLayers);
+    setBackgroundConfig(preset.background);
+    setVisualizerType(preset.visualizer.type);
+    setCircularSettings(preset.visualizer.circularSettings);
+    setClubSettings(preset.visualizer.clubSettings);
+    setEffectsConfig(preset.effects);
+  }, []);
 
   // Create AudioEngine with memoization - recreates when engineKey changes
   const audioEngine = useMemo(() => {
@@ -105,6 +136,24 @@ function App() {
               </button>
             </div>
 
+            {/* Preset selector */}
+            <div className="preset-selector">
+              <span className="preset-selector-label">Preset:</span>
+              <div className="preset-selector-buttons">
+                {PRESET_LIST.map((preset) => (
+                  <button
+                    key={preset.id}
+                    className={`preset-selector-btn ${currentPresetId === preset.id ? 'active' : ''}`}
+                    onClick={() => applyPreset(preset)}
+                    title={preset.description}
+                  >
+                    {preset.name}
+                    <span className="preset-selector-ratio">{preset.aspectRatio.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <AudioPlayer
               audioEngine={audioEngine}
               currentTime={currentTime}
@@ -129,6 +178,14 @@ function App() {
               audioEngine={audioEngine}
               textLayers={textLayers}
               backgroundConfig={backgroundConfig}
+              presetVisualizerType={visualizerType}
+              presetCircularSettings={circularSettings}
+              presetClubSettings={clubSettings}
+              effectsConfig={effectsConfig}
+              aspectRatio={currentPreset.aspectRatio}
+              onVisualizerChange={setVisualizerType}
+              onCircularSettingsChange={setCircularSettings}
+              onClubSettingsChange={setClubSettings}
             />
           </div>
         )}

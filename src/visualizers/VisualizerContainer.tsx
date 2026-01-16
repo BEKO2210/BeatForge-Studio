@@ -10,9 +10,10 @@ import { CircularSpectrumVisualizer } from './CircularSpectrumVisualizer';
 import { TextLayerRenderer, type TextLayer } from '../text';
 import { BackgroundRenderer, type BackgroundConfig } from '../background';
 import { DEFAULT_BACKGROUND } from '../background';
-import { renderVignette } from '../effects';
+import { renderVignette, type EffectsConfig, DEFAULT_EFFECTS } from '../effects';
 import type { VisualizerType, CircularSettings, ClubSettings } from './types';
 import { DEFAULT_CIRCULAR_SETTINGS, DEFAULT_CLUB_SETTINGS } from './types';
+import type { AspectRatio } from '../presets';
 
 interface AudioDataState {
   frequencyData: Float32Array | null;
@@ -24,6 +25,22 @@ interface VisualizerContainerProps {
   textLayers?: TextLayer[];
   backgroundConfig?: BackgroundConfig;
   className?: string;
+  /** Preset-controlled visualizer type */
+  presetVisualizerType?: VisualizerType;
+  /** Preset-controlled circular settings */
+  presetCircularSettings?: CircularSettings;
+  /** Preset-controlled club settings */
+  presetClubSettings?: ClubSettings;
+  /** Preset-controlled effects configuration */
+  effectsConfig?: EffectsConfig;
+  /** Preset-controlled aspect ratio */
+  aspectRatio?: AspectRatio;
+  /** Callback when visualizer type changes (for preset sync) */
+  onVisualizerChange?: (type: VisualizerType) => void;
+  /** Callback when circular settings change */
+  onCircularSettingsChange?: (settings: CircularSettings) => void;
+  /** Callback when club settings change */
+  onClubSettingsChange?: (settings: ClubSettings) => void;
 }
 
 /**
@@ -35,8 +52,17 @@ export function VisualizerContainer({
   textLayers,
   backgroundConfig = DEFAULT_BACKGROUND,
   className,
+  presetVisualizerType,
+  presetCircularSettings,
+  presetClubSettings,
+  effectsConfig = DEFAULT_EFFECTS,
+  aspectRatio,
+  onVisualizerChange,
+  onCircularSettingsChange,
+  onClubSettingsChange,
 }: VisualizerContainerProps) {
-  const [selectedVisualizer, setSelectedVisualizer] = useState<VisualizerType>('equalizer');
+  // Use preset-controlled values if provided, otherwise use local state
+  const [localSelectedVisualizer, setLocalSelectedVisualizer] = useState<VisualizerType>('equalizer');
   const [audioData, setAudioData] = useState<AudioDataState>({
     frequencyData: null,
     timeDomainData: null,
@@ -44,24 +70,62 @@ export function VisualizerContainer({
   const [showSettings, setShowSettings] = useState(false);
   const [effectsEnabled, setEffectsEnabled] = useState(true);
 
-  // Visualizer-specific settings
-  const [circularSettings, setCircularSettings] = useState<CircularSettings>(DEFAULT_CIRCULAR_SETTINGS);
-  const [clubSettings, setClubSettings] = useState<ClubSettings>(DEFAULT_CLUB_SETTINGS);
+  // Visualizer-specific settings - use preset values if provided
+  const [localCircularSettings, setLocalCircularSettings] = useState<CircularSettings>(DEFAULT_CIRCULAR_SETTINGS);
+  const [localClubSettings, setLocalClubSettings] = useState<ClubSettings>(DEFAULT_CLUB_SETTINGS);
 
-  // Update handlers for settings
+  // Derive effective values from preset or local state
+  const selectedVisualizer = presetVisualizerType ?? localSelectedVisualizer;
+  const circularSettings = presetCircularSettings ?? localCircularSettings;
+  const clubSettings = presetClubSettings ?? localClubSettings;
+
+  // Handle visualizer change - update local state and notify parent
+  const handleVisualizerChange = useCallback((type: VisualizerType) => {
+    setLocalSelectedVisualizer(type);
+    onVisualizerChange?.(type);
+  }, [onVisualizerChange]);
+
+  // Update handlers for settings - update local state and notify parent
   const updateCircularSetting = useCallback(<K extends keyof CircularSettings>(
     key: K,
     value: CircularSettings[K]
   ) => {
-    setCircularSettings(prev => ({ ...prev, [key]: value }));
-  }, []);
+    setLocalCircularSettings(prev => {
+      const newSettings = { ...prev, [key]: value };
+      onCircularSettingsChange?.(newSettings);
+      return newSettings;
+    });
+  }, [onCircularSettingsChange]);
 
   const updateClubSetting = useCallback(<K extends keyof ClubSettings>(
     key: K,
     value: ClubSettings[K]
   ) => {
-    setClubSettings(prev => ({ ...prev, [key]: value }));
-  }, []);
+    setLocalClubSettings(prev => {
+      const newSettings = { ...prev, [key]: value };
+      onClubSettingsChange?.(newSettings);
+      return newSettings;
+    });
+  }, [onClubSettingsChange]);
+
+  // Sync local state when preset values change
+  useEffect(() => {
+    if (presetVisualizerType) {
+      setLocalSelectedVisualizer(presetVisualizerType);
+    }
+  }, [presetVisualizerType]);
+
+  useEffect(() => {
+    if (presetCircularSettings) {
+      setLocalCircularSettings(presetCircularSettings);
+    }
+  }, [presetCircularSettings]);
+
+  useEffect(() => {
+    if (presetClubSettings) {
+      setLocalClubSettings(presetClubSettings);
+    }
+  }, [presetClubSettings]);
 
   // Canvas and renderer - height is controlled by CSS aspect-ratio
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -70,11 +134,12 @@ export function VisualizerContainer({
   // Beat detection for isBeat and intensity
   const { beatInfo } = useBeatDetector(audioEngine);
 
-  // Camera shake effect - only active when effects enabled
+  // Camera shake effect - use effectsConfig settings
+  const shakeConfig = effectsConfig.cameraShake;
   const { offsetX, offsetY } = useCameraShake(
-    effectsEnabled && (beatInfo?.isBeat ?? false),
+    effectsEnabled && shakeConfig.enabled && (beatInfo?.isBeat ?? false),
     beatInfo?.intensity ?? 0,
-    { maxOffset: 8, decayMs: 100, threshold: 0.6 }
+    { maxOffset: shakeConfig.maxOffset, decayMs: shakeConfig.decayMs, threshold: shakeConfig.threshold }
   );
 
   // Poll beat detector for raw audio data each frame
@@ -122,20 +187,21 @@ export function VisualizerContainer({
     };
   }, [audioEngine]);
 
-  // Vignette effect - register as overlay layer
+  // Vignette effect - register as overlay layer, use effectsConfig settings
+  const vignetteConfig = effectsConfig.vignette;
   useEffect(() => {
-    if (!renderer || !effectsEnabled) return;
+    if (!renderer || !effectsEnabled || !vignetteConfig.enabled) return;
 
     const width = renderer.width;
     const height = renderer.height;
 
     const vignetteCallback = (ctx: CanvasRenderingContext2D) => {
-      renderVignette(ctx, width, height, { intensity: 0.35, softness: 0.5 });
+      renderVignette(ctx, width, height, { intensity: vignetteConfig.intensity, softness: vignetteConfig.softness });
     };
 
     // Register at overlay layer (after visualizers, before text)
     return renderer.onRender(vignetteCallback, 'overlay');
-  }, [renderer, effectsEnabled]);
+  }, [renderer, effectsEnabled, vignetteConfig]);
 
   // Common props for all visualizers
   const visualizerProps = {
@@ -159,25 +225,25 @@ export function VisualizerContainer({
       <div className="visualizer-selector">
         <button
           className={`visualizer-selector-btn ${selectedVisualizer === 'equalizer' ? 'active' : ''}`}
-          onClick={() => setSelectedVisualizer('equalizer')}
+          onClick={() => handleVisualizerChange('equalizer')}
         >
           Spectrum
         </button>
         <button
           className={`visualizer-selector-btn ${selectedVisualizer === 'equalizer-v2' ? 'active' : ''}`}
-          onClick={() => setSelectedVisualizer('equalizer-v2')}
+          onClick={() => handleVisualizerChange('equalizer-v2')}
         >
           Club
         </button>
         <button
           className={`visualizer-selector-btn ${selectedVisualizer === 'waveform' ? 'active' : ''}`}
-          onClick={() => setSelectedVisualizer('waveform')}
+          onClick={() => handleVisualizerChange('waveform')}
         >
           Wave
         </button>
         <button
           className={`visualizer-selector-btn ${selectedVisualizer === 'circular' ? 'active' : ''}`}
-          onClick={() => setSelectedVisualizer('circular')}
+          onClick={() => handleVisualizerChange('circular')}
         >
           Circular
         </button>
@@ -333,7 +399,10 @@ export function VisualizerContainer({
       {/* Canvas for visualizer rendering */}
       <div
         className="visualizer-canvas-wrapper"
-        style={effectsEnabled ? { transform: `translate(${offsetX}px, ${offsetY}px)` } : undefined}
+        style={{
+          ...(effectsEnabled ? { transform: `translate(${offsetX}px, ${offsetY}px)` } : {}),
+          ...(aspectRatio ? { aspectRatio: `${aspectRatio.width} / ${aspectRatio.height}` } : {}),
+        }}
       >
         <canvas ref={canvasRef} className="visualizer-canvas" />
       </div>
