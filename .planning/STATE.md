@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-15)
 
 **Core value:** Beat-reactive visuals that feel tight and alive. If the visuals don't breathe with the music, nothing else matters.
-**Current focus:** Phase 10 — Presets (Plan 01 COMPLETE)
+**Current focus:** Phase 11 — Export Pipeline (Plan 01 COMPLETE)
 
 ## Current Position
 
-Phase: 10 of 12 (Presets)
-Plan: 01 of 1 complete
-Status: Four style presets implemented with aspect ratio support
-Last activity: 2025-01-16 — Plan 10-01 executed (TikTok, YouTube, Lyric, Club presets)
+Phase: 11 of 12 (Export Pipeline)
+Plan: 01 of 2 complete
+Status: VideoExporter infrastructure ready for UI integration
+Last activity: 2025-01-16 — Plan 11-01 executed (VideoExporter, export types, audio routing)
 
-Progress: ██████████ 100%
+Progress: █████░░░░░ 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
+- Total plans completed: 15
 - Average duration: 10 min
-- Total execution time: 2.6 hours
+- Total execution time: 2.7 hours
 
 **By Phase:**
 
@@ -37,9 +37,10 @@ Progress: ██████████ 100%
 | 08-background-system | 1/1 | 10 min | 10 min |
 | 09-effects | 1/1 | 9 min | 9 min |
 | 10-presets | 1/1 | 12 min | 12 min |
+| 11-export-pipeline | 1/2 | 8 min | 8 min |
 
 **Recent Trend:**
-- Last 5 plans: 12, 6, 10, 9, 12 min
+- Last 5 plans: 6, 10, 9, 12, 8 min
 - Trend: Consistent execution times
 
 ## Accumulated Context
@@ -99,6 +100,10 @@ Recent decisions affecting current work:
 - **2025-01-16 (10-01):** YouTube preset as default (most common use case, 16:9 aspect ratio)
 - **2025-01-16 (10-01):** Aspect ratio via CSS property on canvas wrapper
 - **2025-01-16 (10-01):** VisualizerContainer accepts optional preset props, falls back to local state
+- **2025-01-16 (11-01):** VP9/Opus codec fallback chain for browser compatibility
+- **2025-01-16 (11-01):** 5 Mbps video bitrate for quality balance
+- **2025-01-16 (11-01):** 100ms MediaRecorder chunk intervals for smooth progress
+- **2025-01-16 (11-01):** Parallel audio routing - speakers + capture simultaneously
 
 ### Pending Todos
 
@@ -111,5 +116,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2025-01-16
-Stopped at: Phase 10 Plan 01 complete - Four style presets with aspect ratio support
+Stopped at: Phase 11 Plan 01 complete - VideoExporter infrastructure ready
 Resume file: None
