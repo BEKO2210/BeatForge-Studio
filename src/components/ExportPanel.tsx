@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import type { AudioEngine } from '../audio/AudioEngine';
 import { VideoExporter } from '../export/VideoExporter';
 import {
@@ -6,6 +6,7 @@ import {
   type ExportResolution,
   type ExportProgress,
 } from '../export/types';
+import { useTier } from '../tier';
 import './ExportPanel.css';
 
 /**
@@ -50,8 +51,17 @@ export function ExportPanel({
   audioEngine,
   disabled = false,
 }: ExportPanelProps) {
+  const { tier, config } = useTier();
+
+  // Filter resolutions based on tier
+  const availableResolutions = useMemo(() => {
+    return EXPORT_RESOLUTIONS.filter(
+      (res) => res.height <= config.maxResolution
+    );
+  }, [config.maxResolution]);
+
   const [selectedResolution, setSelectedResolution] = useState<ExportResolution>(
-    EXPORT_RESOLUTIONS[1] ?? EXPORT_RESOLUTIONS[0]! // Default to 1080p
+    availableResolutions[0]! // Default to highest available
   );
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -129,17 +139,30 @@ export function ExportPanel({
 
       {/* Resolution selector */}
       <div className="export-resolution-selector">
-        {EXPORT_RESOLUTIONS.map((resolution) => (
-          <button
-            key={resolution.id}
-            className={`export-resolution-btn ${selectedResolution.id === resolution.id ? 'active' : ''}`}
-            onClick={() => setSelectedResolution(resolution)}
-            disabled={isExporting}
-          >
-            {resolution.label}
-          </button>
-        ))}
+        {EXPORT_RESOLUTIONS.map((resolution) => {
+          const isAvailable = resolution.height <= config.maxResolution;
+          const isLocked = !isAvailable;
+          return (
+            <button
+              key={resolution.id}
+              className={`export-resolution-btn ${selectedResolution.id === resolution.id ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
+              onClick={() => isAvailable && setSelectedResolution(resolution)}
+              disabled={isExporting || isLocked}
+              title={isLocked ? 'Upgrade to Pro to unlock' : resolution.label}
+            >
+              {resolution.label}
+              {isLocked && <span className="export-resolution-lock">Pro</span>}
+            </button>
+          );
+        })}
       </div>
+
+      {/* Tier upgrade hint for free users */}
+      {tier === 'free' && (
+        <div className="export-tier-hint">
+          Upgrade to Pro for 1080p export and no watermark
+        </div>
+      )}
 
       {/* Export controls */}
       <div className="export-controls">

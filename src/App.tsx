@@ -19,9 +19,11 @@ import {
   type PresetId,
   type PresetConfig,
 } from './presets';
+import { TierProvider, useTier } from './tier';
 import './App.css';
 
-function App() {
+function AppContent() {
+  const { tier, config, toggleTier } = useTier();
   const [audioState, setAudioState] = useState<AudioState>('idle');
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -104,8 +106,17 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1 className="app-title">BeatForge Studio</h1>
-        <p className="app-subtitle">Browser-based music visualizer creator</p>
+        <div className="app-header-left">
+          <h1 className="app-title">BeatForge Studio</h1>
+          <p className="app-subtitle">Browser-based music visualizer creator</p>
+        </div>
+        <button
+          className={`tier-toggle ${tier === 'pro' ? 'tier-toggle--pro' : ''}`}
+          onClick={toggleTier}
+          title={`Current: ${tier.toUpperCase()} tier. Click to toggle.`}
+        >
+          {tier === 'free' ? 'Free' : 'Pro'}
+        </button>
       </header>
 
       <main className="app-main">
@@ -197,11 +208,20 @@ function App() {
               onCircularSettingsChange={setCircularSettings}
               onClubSettingsChange={setClubSettings}
               onCanvasReady={setCanvasElement}
+              showWatermark={config.showWatermark}
             />
           </div>
         )}
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <TierProvider>
+      <AppContent />
+    </TierProvider>
   );
 }
 
