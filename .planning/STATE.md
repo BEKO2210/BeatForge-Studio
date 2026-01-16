@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-15)
 
 **Core value:** Beat-reactive visuals that feel tight and alive. If the visuals don't breathe with the music, nothing else matters.
-**Current focus:** Phase 7 — Text System (Plan 01 complete)
+**Current focus:** Phase 9 — Effects (Plan 01 COMPLETE)
 
 ## Current Position
 
-Phase: 7 of 12 (Text System) — IN PROGRESS
-Plan: 01 of N complete
-Status: Text system foundation created - types, rendering, and animations
-Last activity: 2025-01-16 — Plan 07-01 executed (text type definitions, renderer, animations)
+Phase: 9 of 12 (Effects)
+Plan: 01 of 1 complete
+Status: Camera shake and vignette effects implemented with FX toggle
+Last activity: 2025-01-16 — Plan 09-01 executed (camera shake, vignette, integration)
 
-Progress: ████████░░ 80% (plan 01)
+Progress: ██████████ 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: 11 min
-- Total execution time: 2.0 hours
+- Total plans completed: 13
+- Average duration: 10 min
+- Total execution time: 2.4 hours
 
 **By Phase:**
 
@@ -33,10 +33,12 @@ Progress: ████████░░ 80% (plan 01)
 | 04-canvas-renderer | 1/1 | 8 min | 8 min |
 | 05-visualizers | 3/3 | 43 min | 14 min |
 | 06-beat-reactivity | 2/2 | 20 min | 10 min |
-| 07-text-system | 1/N | 6 min | 6 min |
+| 07-text-system | 1/1 | 6 min | 6 min |
+| 08-background-system | 1/1 | 10 min | 10 min |
+| 09-effects | 1/1 | 9 min | 9 min |
 
 **Recent Trend:**
-- Last 5 plans: 25, 12, 8, 12, 6 min
+- Last 5 plans: 8, 12, 6, 10, 9 min
 - Trend: Consistent execution times
 
 ## Accumulated Context
@@ -83,6 +85,15 @@ Recent decisions affecting current work:
 - **2025-01-16 (07-01):** Pure renderTextLayer function matching visualizer pattern
 - **2025-01-16 (07-01):** Exhaustive switch in calculateTextAnimation for type safety
 - **2025-01-16 (07-01):** 50px slide distance, 0.1 pulse scale factor for subtle effects
+- **2025-01-16 (08-01):** Background renders at 'background' layer priority 0 (behind everything)
+- **2025-01-16 (08-01):** Linear gradient angle calculation using trigonometry for full diagonal coverage
+- **2025-01-16 (08-01):** Image backgrounds use FileReader for data URL conversion
+- **2025-01-16 (08-01):** Gradient supports 2-4 color stops with position sliders
+- **2025-01-16 (09-01):** CSS transform for camera shake (simpler than canvas translate)
+- **2025-01-16 (09-01):** Vignette at overlay layer priority 20 (after visualizers, before text)
+- **2025-01-16 (09-01):** 0.6 intensity threshold for camera shake (only strong beats)
+- **2025-01-16 (09-01):** 100ms decay for camera shake (snappier than visualizers)
+- **2025-01-16 (09-01):** 8px max offset, 35% vignette intensity (subtle but cinematic)
 
 ### Pending Todos
 
@@ -95,5 +106,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2025-01-16
-Stopped at: Plan 07-01 complete - text system foundation ready
+Stopped at: Phase 09 Plan 01 complete - Camera shake and vignette effects implemented
 Resume file: None
