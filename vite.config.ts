@@ -37,15 +37,16 @@ export default defineConfig({
         start_url: '/Meet-the-Beat-main/',
         icons: [
           {
-            src: 'icon-192.png',
-            sizes: '192x192',
-            type: 'image/png',
+            src: 'icon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any',
           },
           {
-            src: 'icon-512.png',
+            src: 'icon.svg',
             sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable',
+            type: 'image/svg+xml',
+            purpose: 'maskable',
           },
         ],
       },
