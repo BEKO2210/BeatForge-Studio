@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-15)
 
 **Core value:** Beat-reactive visuals that feel tight and alive. If the visuals don't breathe with the music, nothing else matters.
-**Current focus:** Phase 11 COMPLETE — Ready for Phase 12 (Polish & Deploy)
+**Current focus:** Phase 12 (Platform Polish) — PWA complete, responsive UI next
 
 ## Current Position
 
-Phase: 11 of 12 (Export Pipeline) ✓ COMPLETE
-Plan: 2 of 2 complete
-Status: Video export fully functional with UI
-Last activity: 2025-01-16 — Plan 11-02 executed (ExportPanel, canvas ref, App integration)
+Phase: 12 of 12 (Platform Polish) — In Progress
+Plan: 1 of 3 complete
+Status: PWA setup complete (offline support, installability)
+Last activity: 2025-01-16 — Plan 12-01 executed (PWA plugin, manifest, icons)
 
-Progress: ██████████ 100%
+Progress: █████████░ 92%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
+- Total plans completed: 17
 - Average duration: 10 min
-- Total execution time: 2.8 hours
+- Total execution time: 2.9 hours
 
 **By Phase:**
 
@@ -38,9 +38,10 @@ Progress: ██████████ 100%
 | 09-effects | 1/1 | 9 min | 9 min |
 | 10-presets | 1/1 | 12 min | 12 min |
 | 11-export-pipeline | 2/2 | 14 min | 7 min |
+| 12-platform-polish | 1/3 | 7 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 10, 9, 12, 8, 6 min
+- Last 5 plans: 9, 12, 8, 6, 7 min
 - Trend: Consistent execution times
 
 ## Accumulated Context
@@ -107,6 +108,9 @@ Recent decisions affecting current work:
 - **2025-01-16 (11-02):** onCanvasReady callback pattern for canvas access (simpler than forwardRef)
 - **2025-01-16 (11-02):** ExportPanel positioned between BackgroundEditor and VisualizerContainer
 - **2025-01-16 (11-02):** Green gradient for export button, red for cancel - clear visual distinction
+- **2025-01-16 (12-01):** generateSW mode over injectManifest for PWA simplicity
+- **2025-01-16 (12-01):** SVG icons for modern browser compatibility (scalable, single file)
+- **2025-01-16 (12-01):** autoUpdate registration for seamless service worker updates
 
 ### Pending Todos
 
@@ -119,6 +123,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2025-01-16
-Stopped at: Phase 11 COMPLETE - Export pipeline fully functional
+Stopped at: Plan 12-01 complete - PWA setup with service worker
 Resume file: None
-Next: Phase 12 (Polish & Deploy)
+Next: Plan 12-02 (Responsive UI) or continue to 12-03 (Watermark/Pricing)
