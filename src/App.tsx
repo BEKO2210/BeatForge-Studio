@@ -19,11 +19,9 @@ import {
   type PresetId,
   type PresetConfig,
 } from './presets';
-import { TierProvider, useTier } from './tier';
 import './App.css';
 
-function AppContent() {
-  const { tier, config, toggleTier } = useTier();
+function App() {
   const [audioState, setAudioState] = useState<AudioState>('idle');
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -57,8 +55,9 @@ function AppContent() {
     setEffectsConfig(preset.effects);
   }, []);
 
-  // Create AudioEngine with memoization - recreates when engineKey changes
+  // Re-create AudioEngine whenever engineKey bumps (cache-bust for "New" button)
   const audioEngine = useMemo(() => {
+    void engineKey;
     const engine = new AudioEngine({
       onStateChange: (state) => {
         setAudioState(state);
@@ -110,13 +109,7 @@ function AppContent() {
           <h1 className="app-title">BeatForge Studio</h1>
           <p className="app-subtitle">Browser-based music visualizer creator</p>
         </div>
-        <button
-          className={`tier-toggle ${tier === 'pro' ? 'tier-toggle--pro' : ''}`}
-          onClick={toggleTier}
-          title={`Current: ${tier.toUpperCase()} tier. Click to toggle.`}
-        >
-          {tier === 'free' ? 'Free' : 'Pro'}
-        </button>
+        <span className="app-badge">Pro · Free</span>
       </header>
 
       <main className="app-main">
@@ -208,20 +201,11 @@ function AppContent() {
               onCircularSettingsChange={setCircularSettings}
               onClubSettingsChange={setClubSettings}
               onCanvasReady={setCanvasElement}
-              showWatermark={config.showWatermark}
             />
           </div>
         )}
       </main>
     </div>
-  );
-}
-
-function App() {
-  return (
-    <TierProvider>
-      <AppContent />
-    </TierProvider>
   );
 }
 

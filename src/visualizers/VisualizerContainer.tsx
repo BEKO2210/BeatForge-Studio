@@ -11,7 +11,6 @@ import { TextLayerRenderer, type TextLayer } from '../text';
 import { BackgroundRenderer, type BackgroundConfig } from '../background';
 import { DEFAULT_BACKGROUND } from '../background';
 import { renderVignette, type EffectsConfig, DEFAULT_EFFECTS } from '../effects';
-import { Watermark } from '../components/Watermark';
 import type { VisualizerType, CircularSettings, ClubSettings } from './types';
 import { DEFAULT_CIRCULAR_SETTINGS, DEFAULT_CLUB_SETTINGS } from './types';
 import type { AspectRatio } from '../presets';
@@ -44,8 +43,6 @@ interface VisualizerContainerProps {
   onClubSettingsChange?: (settings: ClubSettings) => void;
   /** Callback to expose canvas element for export */
   onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
-  /** Whether to show watermark (free tier) */
-  showWatermark?: boolean;
 }
 
 /**
@@ -66,7 +63,6 @@ export function VisualizerContainer({
   onCircularSettingsChange,
   onClubSettingsChange,
   onCanvasReady,
-  showWatermark = false,
 }: VisualizerContainerProps) {
   // Use preset-controlled values if provided, otherwise use local state
   const [localSelectedVisualizer, setLocalSelectedVisualizer] = useState<VisualizerType>('equalizer');
@@ -114,25 +110,6 @@ export function VisualizerContainer({
       return newSettings;
     });
   }, [onClubSettingsChange]);
-
-  // Sync local state when preset values change
-  useEffect(() => {
-    if (presetVisualizerType) {
-      setLocalSelectedVisualizer(presetVisualizerType);
-    }
-  }, [presetVisualizerType]);
-
-  useEffect(() => {
-    if (presetCircularSettings) {
-      setLocalCircularSettings(presetCircularSettings);
-    }
-  }, [presetCircularSettings]);
-
-  useEffect(() => {
-    if (presetClubSettings) {
-      setLocalClubSettings(presetClubSettings);
-    }
-  }, [presetClubSettings]);
 
   // Canvas and renderer - height is controlled by CSS aspect-ratio
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -420,7 +397,6 @@ export function VisualizerContainer({
         }}
       >
         <canvas ref={canvasRef} className="visualizer-canvas" />
-        {showWatermark && <Watermark />}
       </div>
 
       {/* Render background (renders at layer priority 0) */}

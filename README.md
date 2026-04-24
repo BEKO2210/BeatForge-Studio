@@ -61,7 +61,6 @@ src/
 ├── export/         # Video export logic
 ├── hooks/          # Custom React hooks for reactivity
 ├── presets/        # Definitions for the four visual style presets
-├── tier/           # Free/Pro tier logic
 ├── App.tsx         # Main application component
 └── main.tsx        # Application entry point
 ```

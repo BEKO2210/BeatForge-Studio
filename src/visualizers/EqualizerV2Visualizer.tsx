@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { VisualizerProps, ClubSettings } from './types';
 import { DEFAULT_CLUB_SETTINGS } from './types';
 import { useBeatReaction } from '../hooks/useBeatReaction';
@@ -54,8 +54,11 @@ export function EqualizerV2Visualizer({
   height,
   clubSettings,
 }: VisualizerProps): null {
-  // Merge with defaults
-  const settings: ClubSettings = { ...DEFAULT_CLUB_SETTINGS, ...clubSettings };
+  // Merge with defaults (memoised so useEffect deps are stable)
+  const settings = useMemo<ClubSettings>(
+    () => ({ ...DEFAULT_CLUB_SETTINGS, ...clubSettings }),
+    [clubSettings],
+  );
 
   // Aggressive beat reaction for club feel - decay controlled by settings
   const decayMs = 80 + (1 - settings.decay) * 160; // decay 0→240ms, 1→80ms

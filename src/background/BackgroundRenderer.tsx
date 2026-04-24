@@ -197,14 +197,15 @@ export function BackgroundRenderer({
           ctx.fillRect(0, 0, w, h);
           break;
 
-        case 'gradient':
+        case 'gradient': {
           // Gradient fill
           const gradient = createGradient(ctx, currentConfig, w, h);
           ctx.fillStyle = gradient;
           ctx.fillRect(0, 0, w, h);
           break;
+        }
 
-        case 'image':
+        case 'image': {
           // Image background with fit mode
           const img = imageRef.current;
           if (img && img.complete) {
@@ -229,6 +230,7 @@ export function BackgroundRenderer({
             ctx.fillRect(0, 0, w, h);
           }
           break;
+        }
       }
     };
 
