@@ -192,6 +192,8 @@ export class VideoExporter {
     const progressInfo: ExportProgress = {
       state: this.state,
       progress: this.state === 'complete' ? 1 : progress,
+      currentTime: this.state === 'complete' ? this.duration : currentTime,
+      totalDuration: this.duration,
       error,
     };
 

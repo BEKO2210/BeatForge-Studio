@@ -54,7 +54,7 @@ export const TIKTOK_PRESET: PresetConfig = {
   visualizer: {
     type: 'circular',
     circularSettings: {
-      ringGap: 0.2,
+      ringGap: 0,
       barSpread: 1.2,
       sensitivity: 0.8,
       rotationSpeed: 1.5,

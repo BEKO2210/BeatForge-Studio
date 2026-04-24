@@ -43,6 +43,10 @@ export interface ExportProgress {
   state: ExportState;
   /** Progress 0-1 */
   progress: number;
+  /** Elapsed recording time in seconds */
+  currentTime?: number;
+  /** Total expected duration in seconds */
+  totalDuration?: number;
   /** Error message if state is 'error' */
   error?: string;
 }
