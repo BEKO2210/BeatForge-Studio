@@ -17,8 +17,17 @@ const TRAIL_LENGTH = 12;
 const BASE_ROTATION_SPEED = 0.3;
 // Number of bars for smooth circle - MUST cover full 360°
 const BAR_COUNT = 128;
-// Minimum bar height (percentage of max) - ensures NO dead zones
-const MIN_BAR_HEIGHT = 0.03;
+// Minimum bar height (fraction of max) — keeps every slot visibly lit even
+// when its frequency bin has no energy (otherwise high-kHz bins look empty)
+const MIN_BAR_HEIGHT = 0.08;
+// Fraction of the FFT we actually sample. The AnalyserNode returns bins up
+// to the Nyquist frequency (~22 kHz at 44.1 kHz sample rate), but musical
+// content lives below ~13 kHz. Sampling past that produces dead bars that
+// break the illusion of a 360° ring.
+const MUSICAL_FFT_FRACTION = 0.6;
+// Per-bar high-frequency boost so upper bins (which always carry less energy
+// than bass) still animate visibly. 0 = no boost, 1 = double at the top bar.
+const HF_COMPENSATION = 0.7;
 
 interface HistoryFrame {
   values: number[];
@@ -36,7 +45,8 @@ function interpolateFrequencyData(
   sensitivity: number
 ): number[] {
   const result: number[] = [];
-  const dataLength = data.length;
+  // Cap to the musical range — ignore the near-Nyquist bins that never have energy
+  const dataLength = Math.max(2, Math.floor(data.length * MUSICAL_FFT_FRACTION));
 
   for (let i = 0; i < barCount; i++) {
     // Normalized position (0 to 1)
@@ -72,10 +82,12 @@ function interpolateFrequencyData(
 
     // Apply sensitivity and ensure minimum height
     const avgValue = count > 0 ? sum / count : 0;
-    const scaledValue = avgValue * (0.5 + sensitivity);
+    // Pink-noise-ish compensation: higher bars get a gain boost
+    const hfGain = 1 + normalizedPos * HF_COMPENSATION;
+    const scaledValue = avgValue * (0.5 + sensitivity) * hfGain;
 
     // Apply minimum height - every bar is ALWAYS visible
-    const finalValue = Math.max(MIN_BAR_HEIGHT, scaledValue);
+    const finalValue = Math.max(MIN_BAR_HEIGHT, Math.min(1, scaledValue));
     result.push(finalValue);
   }
 
