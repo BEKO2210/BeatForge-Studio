@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import type { AudioEngine } from '../audio/AudioEngine';
 import { VideoExporter } from '../export/VideoExporter';
 import {
@@ -6,24 +6,14 @@ import {
   type ExportResolution,
   type ExportProgress,
 } from '../export/types';
-import { useTier } from '../tier';
 import './ExportPanel.css';
 
-/**
- * Props for ExportPanel component
- */
 export interface ExportPanelProps {
-  /** Canvas element to capture for export */
   canvas: HTMLCanvasElement | null;
-  /** Audio engine for audio capture */
   audioEngine: AudioEngine | null;
-  /** Whether the panel is disabled */
   disabled?: boolean;
 }
 
-/**
- * Download a blob as a file
- */
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -33,42 +23,27 @@ const downloadBlob = (blob: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-/**
- * Generate export filename with timestamp
- */
 const generateFilename = () => {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   return `beatforge-export-${timestamp}.webm`;
 };
 
-/**
- * ExportPanel - UI for exporting visualizer to video
- *
- * Allows users to select resolution, start/stop export, and shows progress.
- */
+// Highest-quality default (1080p — last in the array)
+const DEFAULT_RESOLUTION =
+  EXPORT_RESOLUTIONS[EXPORT_RESOLUTIONS.length - 1] ?? EXPORT_RESOLUTIONS[0]!;
+
 export function ExportPanel({
   canvas,
   audioEngine,
   disabled = false,
 }: ExportPanelProps) {
-  const { tier, config } = useTier();
-
-  // Filter resolutions based on tier
-  const availableResolutions = useMemo(() => {
-    return EXPORT_RESOLUTIONS.filter(
-      (res) => res.height <= config.maxResolution
-    );
-  }, [config.maxResolution]);
-
-  const [selectedResolution, setSelectedResolution] = useState<ExportResolution>(
-    availableResolutions[0]! // Default to highest available
-  );
+  const [selectedResolution, setSelectedResolution] =
+    useState<ExportResolution>(DEFAULT_RESOLUTION);
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
   const [isExporting, setIsExporting] = useState(false);
 
   const exporterRef = useRef<VideoExporter | null>(null);
 
-  // Can only export when canvas and audio are available
   const canExport = canvas !== null && audioEngine !== null && !disabled;
 
   const handleStartExport = useCallback(async () => {
@@ -112,7 +87,6 @@ export function ExportPanel({
     }
   }, []);
 
-  // Get status text based on export state
   const getStatusText = () => {
     if (!exportProgress) return '';
     switch (exportProgress.state) {
@@ -137,34 +111,20 @@ export function ExportPanel({
         <h3 className="export-panel-title">Export</h3>
       </div>
 
-      {/* Resolution selector */}
       <div className="export-resolution-selector">
-        {EXPORT_RESOLUTIONS.map((resolution) => {
-          const isAvailable = resolution.height <= config.maxResolution;
-          const isLocked = !isAvailable;
-          return (
-            <button
-              key={resolution.id}
-              className={`export-resolution-btn ${selectedResolution.id === resolution.id ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
-              onClick={() => isAvailable && setSelectedResolution(resolution)}
-              disabled={isExporting || isLocked}
-              title={isLocked ? 'Upgrade to Pro to unlock' : resolution.label}
-            >
-              {resolution.label}
-              {isLocked && <span className="export-resolution-lock">Pro</span>}
-            </button>
-          );
-        })}
+        {EXPORT_RESOLUTIONS.map((resolution) => (
+          <button
+            key={resolution.id}
+            className={`export-resolution-btn ${selectedResolution.id === resolution.id ? 'active' : ''}`}
+            onClick={() => setSelectedResolution(resolution)}
+            disabled={isExporting}
+            title={resolution.label}
+          >
+            {resolution.label}
+          </button>
+        ))}
       </div>
 
-      {/* Tier upgrade hint for free users */}
-      {tier === 'free' && (
-        <div className="export-tier-hint">
-          Upgrade to Pro for 1080p export and no watermark
-        </div>
-      )}
-
-      {/* Export controls */}
       <div className="export-controls">
         {!isExporting ? (
           <button
@@ -184,7 +144,6 @@ export function ExportPanel({
         )}
       </div>
 
-      {/* Progress bar */}
       {isExporting && exportProgress && (
         <div className="export-progress">
           <div
@@ -194,7 +153,6 @@ export function ExportPanel({
         </div>
       )}
 
-      {/* Status text */}
       {exportProgress && (
         <div className={`export-status ${exportProgress.state === 'error' ? 'export-status--error' : ''}`}>
           {getStatusText()}

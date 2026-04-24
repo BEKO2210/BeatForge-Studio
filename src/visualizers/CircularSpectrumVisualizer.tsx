@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { VisualizerProps, CircularSettings } from './types';
 import { DEFAULT_CIRCULAR_SETTINGS } from './types';
 import { useBeatReaction } from '../hooks/useBeatReaction';
@@ -97,8 +97,11 @@ export function CircularSpectrumVisualizer({
   height,
   circularSettings,
 }: VisualizerProps): null {
-  // Merge with defaults
-  const settings: CircularSettings = { ...DEFAULT_CIRCULAR_SETTINGS, ...circularSettings };
+  // Merge with defaults (memoised so useEffect deps are stable)
+  const settings = useMemo<CircularSettings>(
+    () => ({ ...DEFAULT_CIRCULAR_SETTINGS, ...circularSettings }),
+    [circularSettings],
+  );
 
   // Use beat reaction hook for smooth animated value
   const reaction = useBeatReaction(isBeat, beatIntensity, { decayMs: 180 });
