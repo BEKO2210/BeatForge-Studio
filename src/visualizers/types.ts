@@ -44,7 +44,9 @@ export const DEFAULT_CIRCULAR_SETTINGS: CircularSettings = {
   sensitivity: 0.5,
   rotationSpeed: 1,
   startAngle: 0,
-  energySpread: 'linear',
+  // Log spreads musical content across the ring; linear puts near-silent
+  // high-kHz bins at the tail and creates a visible dead zone.
+  energySpread: 'log',
 };
 
 /** Default club settings */
