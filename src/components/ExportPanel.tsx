@@ -28,6 +28,14 @@ const generateFilename = () => {
   return `beatforge-export-${timestamp}.webm`;
 };
 
+const formatTime = (seconds: number): string => {
+  if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+  const total = Math.round(seconds);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+};
+
 // Highest-quality default (1080p — last in the array)
 const DEFAULT_RESOLUTION =
   EXPORT_RESOLUTIONS[EXPORT_RESOLUTIONS.length - 1] ?? EXPORT_RESOLUTIONS[0]!;
@@ -89,17 +97,28 @@ export function ExportPanel({
 
   const getStatusText = () => {
     if (!exportProgress) return '';
-    switch (exportProgress.state) {
+    const { state, progress, currentTime, totalDuration, error } = exportProgress;
+    switch (state) {
       case 'preparing':
         return 'Preparing...';
-      case 'recording':
-        return `Recording ${Math.round(exportProgress.progress * 100)}%`;
+      case 'recording': {
+        const pct = Math.round(progress * 100);
+        if (
+          typeof currentTime === 'number' &&
+          typeof totalDuration === 'number' &&
+          totalDuration > 0
+        ) {
+          const remaining = Math.max(0, totalDuration - currentTime);
+          return `Recording ${pct}% · ${formatTime(currentTime)} / ${formatTime(totalDuration)} · ~${formatTime(remaining)} left`;
+        }
+        return `Recording ${pct}%`;
+      }
       case 'encoding':
         return 'Encoding...';
       case 'complete':
         return 'Complete! Downloading...';
       case 'error':
-        return exportProgress.error ?? 'Export failed';
+        return error ?? 'Export failed';
       default:
         return '';
     }

@@ -321,10 +321,11 @@ export function CircularSpectrumVisualizer({
 }
 
 /**
- * Draw a single frame of the circular spectrum
+ * Draw a single frame of the circular spectrum as filled wedges.
  *
- * CRITICAL: Draws ALL bars with NO skipping
- * Uses proper angle distribution for FULL 360° coverage
+ * Wedges span the full angular slot from inner to outer radius, so there
+ * are no slivers between bars at large radii and no wrap-around gap when
+ * ringGap is 0.
  */
 function drawFrame(
   ctx: CanvasRenderingContext2D,
@@ -336,51 +337,45 @@ function drawFrame(
   rotation: number,
   alpha: number,
   isBeat: boolean,
-  lineWidth: number,
+  _lineWidth: number,
   ringGap: number = 0,
-  barSpread: number = 1
+  barSpread: number = 1,
 ): void {
   const sampleCount = values.length;
 
-  // Apply ring gap - reduces the total angle covered (0 = full 360°)
-  // ringGap of 0 = full circle, 1 = 30% gap
+  // Ring gap: 0 → full 360°, 1 → 30% angular gap
   const totalAngle = Math.PI * 2 * (1 - ringGap * 0.3);
+  const anglePerSlot = totalAngle / sampleCount;
 
-  // Calculate arc width so bars touch and form solid ring
-  // Each bar covers: totalAngle / sampleCount radians
-  const anglePerBar = totalAngle / sampleCount;
-  const arcWidthAtRadius = radius * anglePerBar * barSpread;
-  const effectiveLineWidth = Math.max(lineWidth, arcWidthAtRadius * 1.3);
+  // barSpread controls wedge thickness inside its slot (clamped so it always fills at minimum 40%)
+  const wedgeSpan = anglePerSlot * Math.max(0.4, Math.min(1.5, barSpread));
+  const halfWedge = wedgeSpan / 2;
+  // Small overlap so neighbouring wedges seam without a sub-pixel gap
+  const seamEpsilon = anglePerSlot * 0.02;
 
-  // Draw ALL bars - NO SKIPPING
+  const baseRotation = rotation - Math.PI / 2;
+
   for (let i = 0; i < sampleCount; i++) {
     const value = values[i] ?? MIN_BAR_HEIGHT;
+    const slotCenter = (i + 0.5) * anglePerSlot + baseRotation;
+    const startA = slotCenter - halfWedge - seamEpsilon;
+    const endA = slotCenter + halfWedge + seamEpsilon;
 
-    // CRITICAL: Proper angle distribution for full 360° coverage
-    // Use (i + 0.5) to center each bar in its segment
-    // This ensures the LAST bar doesn't leave a gap
-    const angle = ((i + 0.5) / sampleCount) * totalAngle + rotation - Math.PI / 2;
-
-    // Calculate bar length with minimum height
     const barLength = Math.max(value, MIN_BAR_HEIGHT) * maxBarLength;
+    const innerR = radius;
+    const outerR = radius + barLength;
 
-    // Inner and outer points
-    const innerX = centerX + Math.cos(angle) * radius;
-    const innerY = centerY + Math.sin(angle) * radius;
-    const outerX = centerX + Math.cos(angle) * (radius + barLength);
-    const outerY = centerY + Math.sin(angle) * (radius + barLength);
-
-    // Rainbow color based on position around circle
     const effectiveAlpha = isBeat ? Math.min(1, alpha * 1.3) : alpha;
     const color = getRainbowColor(i / sampleCount, effectiveAlpha);
 
-    // Draw radial line - ALWAYS draws, never skips
     ctx.beginPath();
-    ctx.moveTo(innerX, innerY);
-    ctx.lineTo(outerX, outerY);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = effectiveLineWidth;
-    ctx.lineCap = 'round';
-    ctx.stroke();
+    ctx.moveTo(centerX + Math.cos(startA) * innerR, centerY + Math.sin(startA) * innerR);
+    ctx.lineTo(centerX + Math.cos(startA) * outerR, centerY + Math.sin(startA) * outerR);
+    ctx.arc(centerX, centerY, outerR, startA, endA);
+    ctx.lineTo(centerX + Math.cos(endA) * innerR, centerY + Math.sin(endA) * innerR);
+    ctx.arc(centerX, centerY, innerR, endA, startA, true);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
   }
 }

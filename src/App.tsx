@@ -109,7 +109,6 @@ function App() {
           <h1 className="app-title">BeatForge Studio</h1>
           <p className="app-subtitle">Browser-based music visualizer creator</p>
         </div>
-        <span className="app-badge">Pro · Free</span>
       </header>
 
       <main className="app-main">
